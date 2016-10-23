@@ -9,7 +9,6 @@ import (
 
 func TestInvoke(t *testing.T) {
 
-	//methods :=
 	methodStruct := reflectnote.MethodStruct{make(map[string]*reflectnote.MethodInfo)}
 
 	foo := &reflectnote.Foo{}
@@ -33,7 +32,12 @@ func TestInvoke(t *testing.T) {
 
 	argForFooFuncTwo := []interface{}{"str123", 456}
 	expectFooFuncTwo := fmt.Sprintln("FooFuncTwo with argOne:", argForFooFuncTwo[0], "argTwo:", argForFooFuncTwo[1])
-	resultFooFuncTwo := methodStruct.Methods["FooFuncTwo"].Host.Method(methodStruct.Methods["FooFuncTwo"].Idx).Call([]reflect.Value{reflect.ValueOf(argForFooFuncTwo[0]), reflect.ValueOf(argForFooFuncTwo[1])})
+
+	resultFooFuncTwo := methodStruct.Methods["FooFuncTwo"].
+		Host.Method(methodStruct.Methods["FooFuncTwo"].Idx).
+		Call([]reflect.Value{reflect.ValueOf(argForFooFuncTwo[0]),
+			reflect.ValueOf(argForFooFuncTwo[1])})
+
 	if expectFooFuncTwo != resultFooFuncTwo[0].String() {
 		t.Errorf("invoke FooFuncTwo error")
 	}
