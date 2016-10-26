@@ -23,6 +23,11 @@ type Request struct {
 	Params   []interface{} `json:"params"`
 }
 
+type Response struct {
+	FuncName string        `json:"func_name"`
+	Data     []interface{} `json:"data"`
+}
+
 var methodStruct MethodMap = MethodMap{make(map[string]*MethodInfo)}
 
 func RegisterMethod(v interface{}) {

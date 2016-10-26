@@ -4,23 +4,30 @@ import (
 	"fmt"
 	reflectnote "goNotes/reflectnotes"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
 type Foo struct {
 }
 
-func (foo *Foo) FooFuncZero() string {
-	return fmt.Sprintln("FooFuncZero without arg")
+func (foo *Foo) FooFuncZero() bool {
+	fmt.Sprintln("FooFuncZero without arg")
+
+	return true
 }
 
 func (foo *Foo) FooFuncOne(arg int) string {
 
-	return fmt.Sprintln("FooFuncOne with arg:", arg)
+	fmt.Sprintln("FooFuncOne with arg:", arg)
+
+	return strconv.Itoa(arg)
 }
 
 func (foo *Foo) FooFuncTwo(argStr string, argInt int) string {
-	return fmt.Sprintln("FooFuncTwo with argOne:", argStr, "argTwo:", argInt)
+	fmt.Sprintln("FooFuncTwo with argOne:", argStr, "argTwo:", argInt)
+
+	return argStr + strconv.Itoa(argInt)
 }
 
 type Bar struct {
@@ -30,12 +37,20 @@ func (bar *Bar) BarFuncZero() string {
 	return fmt.Sprintln("BarFuncZero without arg")
 }
 
-func (bar *Bar) BarFuncOne(arg float64) string {
-	return fmt.Sprintln("BarFuncOne with arg:", arg)
+func (bar *Bar) BarFuncOne(arg float64) int {
+	fmt.Sprintln("BarFuncOne with arg:", arg)
+
+	return int(arg)
 }
 
-func (bar *Bar) BarFuncTwo(argStr bool, argInt int) string {
-	return fmt.Sprintln("BarFuncTwo with argOne:", argStr, "argTwo:", argInt)
+func (bar *Bar) BarFuncTwo(argStr bool, argInt int) int {
+	fmt.Sprintln("BarFuncTwo with argOne:", argStr, "argTwo:", argInt)
+
+	if argStr {
+		return argInt
+	} else {
+		return -argInt
+	}
 }
 
 func init() {
@@ -48,29 +63,22 @@ func init() {
 
 func TestInvoke(t *testing.T) {
 
-	expectFooFuncZero := fmt.Sprintln("FooFuncZero without arg")
 	resultFooFuncZero := reflectnote.InvokeByArgs("FooFuncZero", nil)
-
-	if expectFooFuncZero != resultFooFuncZero[0].String() {
+	if false == resultFooFuncZero[0].Bool() {
 		t.Errorf("invoke FooFuncZero error")
 	}
 
-	argForFooFuncOne := 123
-	expectFooFuncOne := fmt.Sprintln("FooFuncOne with arg:", argForFooFuncOne)
 	resultFooFuncOne := reflectnote.InvokeByArgs("FooFuncOne",
-		[]reflect.Value{reflect.ValueOf(argForFooFuncOne)})
+		[]reflect.Value{reflect.ValueOf(123)})
 
-	if expectFooFuncOne != resultFooFuncOne[0].String() {
+	if "123" != resultFooFuncOne[0].String() {
 		t.Errorf("invoke FooFuncOne error")
 	}
 
 	argForFooFuncTwo := []reflect.Value{reflect.ValueOf("str123"), reflect.ValueOf(456)}
-	expectFooFuncTwo := fmt.Sprintln("FooFuncTwo with argOne:", argForFooFuncTwo[0],
-		"argTwo:", argForFooFuncTwo[1])
-
 	resultFooFuncTwo := reflectnote.InvokeByArgs("FooFuncTwo", argForFooFuncTwo)
 
-	if expectFooFuncTwo != resultFooFuncTwo[0].String() {
+	if "str123456" != resultFooFuncTwo[0].String() {
 		t.Errorf("invoke FooFuncTwo error")
 	}
 
@@ -79,21 +87,18 @@ func TestInvoke(t *testing.T) {
 func TestInvokeByJson(t *testing.T) {
 
 	jsonData := `
-			{
-			    "func_name":"FooFuncTwo",
-			    "params":[
-			        "str123",
-			        456
-			    ]
-			}
-			`
-
-	expectFooFuncTwo := fmt.Sprintln("FooFuncTwo"+" with argOne:", "str123", "argTwo:", "456")
-	fmt.Println(expectFooFuncTwo)
+				{
+				    "func_name":"FooFuncTwo",
+				    "params":[
+				        "str123",
+				        456
+				    ]
+				}
+				`
 
 	resultFooFuncTwo := reflectnote.InvokeByString(jsonData)
 
-	if expectFooFuncTwo != resultFooFuncTwo[0].String() {
+	if "str123456" != resultFooFuncTwo[0].String() {
 		t.Errorf("invoke FooFuncTwo error")
 	}
 
