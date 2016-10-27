@@ -96,12 +96,12 @@ func convertParamType(v interface{}, targetType reflect.Type) (targetValue refle
 	return
 }
 
-func convertParam(funcName string, Params []interface{}) []reflect.Value {
+func convertParam(methodInfo *MethodInfo, Params []interface{}) []reflect.Value {
 
 	paramsValue := make([]reflect.Value, 0, len(Params))
 	//跳过 receiver
-	for i := 1; i < methodStruct.Methods[funcName].Method.Type.NumIn(); i++ {
-		inParaType := methodStruct.Methods[funcName].Method.Type.In(i)
+	for i := 1; i < methodInfo.Method.Type.NumIn(); i++ {
+		inParaType := methodInfo.Method.Type.In(i)
 		value, _ := convertParamType(Params[i-1], inParaType)
 		paramsValue = append(paramsValue, value)
 	}
@@ -109,26 +109,50 @@ func convertParam(funcName string, Params []interface{}) []reflect.Value {
 	return paramsValue
 }
 
-func InvokeByArgs(funcName string, par []reflect.Value) []reflect.Value {
+func InvokeByReflectArgs(funcName string, par []reflect.Value) []reflect.Value {
 
 	return methodStruct.Methods[funcName].Host.MethodByName(funcName).Call(par)
 }
 
-func InvokeByParams(funcName string, Params []interface{}) []reflect.Value {
+func InvokeByInterfaceArgs(funcName string, Params []interface{}) []reflect.Value {
 
-	paramsValue := convertParam(funcName, Params)
+	paramsValue := convertParam(methodStruct.Methods[funcName], Params)
 
 	return methodStruct.Methods[funcName].Host.MethodByName(funcName).Call(paramsValue)
 }
 
-func InvokeByString(strData string) []reflect.Value {
+func InvokeByValues(methodInfo *MethodInfo, params []reflect.Value) (
+	data map[string]interface{}) {
 
-	req := &Request{}
-	err := json.Unmarshal([]byte(strData), req)
-
-	if err != nil {
-		return nil
+	data = make(map[string]interface{})
+	result := methodInfo.Host.Method(methodInfo.Idx).Call(params)
+	if len(result) > 0 {
+		data[methodInfo.Method.Name] = result[0].Interface()
+	} else {
+		data[methodInfo.Method.Name] = nil
 	}
 
-	return InvokeByParams(req.FuncName, req.Params)
+	return
+}
+
+func InvokeByJson(byteData []byte) []byte {
+
+	req := &Request{}
+	err := json.Unmarshal(byteData, req)
+
+	resultData := make(map[string]interface{})
+
+	if err != nil {
+		resultData = map[string]interface{}{"Error": err.Error()}
+	} else {
+		paramsValue := convertParam(methodStruct.Methods[req.FuncName], req.Params)
+
+		resultData = InvokeByValues(methodStruct.Methods[req.FuncName], paramsValue)
+
+	}
+
+	data, _ := json.Marshal(resultData)
+
+	return data
+
 }
