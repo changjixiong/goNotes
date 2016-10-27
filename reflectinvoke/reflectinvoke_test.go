@@ -14,20 +14,16 @@ type Foo struct {
 }
 
 func (foo *Foo) FooFuncZero() bool {
-	fmt.Sprintln("FooFuncZero without arg")
 
 	return true
 }
 
 func (foo *Foo) FooFuncOne(arg int) string {
 
-	fmt.Sprintln("FooFuncOne with arg:", arg)
-
 	return strconv.Itoa(arg)
 }
 
 func (foo *Foo) FooFuncTwo(argStr string, argInt int) string {
-	fmt.Sprintln("FooFuncTwo with argOne:", argStr, "argTwo:", argInt)
 
 	return argStr + strconv.Itoa(argInt)
 }
@@ -40,13 +36,11 @@ func (bar *Bar) BarFuncZero() string {
 }
 
 func (bar *Bar) BarFuncOne(arg float64) int {
-	fmt.Sprintln("BarFuncOne with arg:", arg)
 
 	return int(arg)
 }
 
 func (bar *Bar) BarFuncTwo(argStr bool, argInt int) int {
-	fmt.Sprintln("BarFuncTwo with argOne:", argStr, "argTwo:", argInt)
 
 	if argStr {
 		return argInt
