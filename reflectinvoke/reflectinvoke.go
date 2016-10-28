@@ -2,6 +2,7 @@ package reflectinvoke
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"unicode"
@@ -48,7 +49,8 @@ func RegisterMethod(v interface{}) {
 	}
 }
 
-func convertParamType(v interface{}, targetType reflect.Type) (targetValue reflect.Value, ok bool) {
+func convertParamType(v interface{}, targetType reflect.Type) (
+	targetValue reflect.Value, ok bool) {
 	defer func() {
 		if re := recover(); re != nil {
 			ok = false
@@ -96,17 +98,24 @@ func convertParamType(v interface{}, targetType reflect.Type) (targetValue refle
 	return
 }
 
-func convertParam(methodInfo *MethodInfo, Params []interface{}) []reflect.Value {
+func convertParam(methodInfo *MethodInfo, Params []interface{}) ([]reflect.Value, error) {
+
+	if len(Params) != methodInfo.Method.Type.NumIn()-1 {
+		return nil, errors.New("convertParam number error")
+	}
 
 	paramsValue := make([]reflect.Value, 0, len(Params))
 	//跳过 receiver
 	for i := 1; i < methodInfo.Method.Type.NumIn(); i++ {
 		inParaType := methodInfo.Method.Type.In(i)
-		value, _ := convertParamType(Params[i-1], inParaType)
+		value, ok := convertParamType(Params[i-1], inParaType)
+		if !ok {
+			return nil, errors.New("convertParamType error")
+		}
 		paramsValue = append(paramsValue, value)
 	}
 
-	return paramsValue
+	return paramsValue, nil
 }
 
 func InvokeByReflectArgs(funcName string, par []reflect.Value) []reflect.Value {
@@ -116,7 +125,11 @@ func InvokeByReflectArgs(funcName string, par []reflect.Value) []reflect.Value {
 
 func InvokeByInterfaceArgs(funcName string, Params []interface{}) []reflect.Value {
 
-	paramsValue := convertParam(methodStruct.Methods[funcName], Params)
+	paramsValue, err := convertParam(methodStruct.Methods[funcName], Params)
+
+	if err != nil {
+		return nil
+	}
 
 	return methodStruct.Methods[funcName].Host.MethodByName(funcName).Call(paramsValue)
 }
@@ -145,9 +158,15 @@ func InvokeByJson(byteData []byte) []byte {
 	if err != nil {
 		resultData = map[string]interface{}{"Error": err.Error()}
 	} else {
-		paramsValue := convertParam(methodStruct.Methods[req.FuncName], req.Params)
 
-		resultData = InvokeByValues(methodStruct.Methods[req.FuncName], paramsValue)
+		methodInfo := methodStruct.Methods[req.FuncName]
+		paramsValue, err := convertParam(methodInfo, req.Params)
+
+		if err != nil {
+			resultData["error"] = err.Error()
+		} else {
+			resultData = InvokeByValues(methodInfo, paramsValue)
+		}
 
 	}
 

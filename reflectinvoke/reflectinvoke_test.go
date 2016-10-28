@@ -49,6 +49,11 @@ func (bar *Bar) BarFuncTwo(argStr bool, argInt int) int {
 	}
 }
 
+func (bar *Bar) BarFuncAdd(argOne, argTwo float64) float64 {
+
+	return argOne + argTwo
+}
+
 func init() {
 	foo := &Foo{}
 	bar := &Bar{}
@@ -145,7 +150,11 @@ func testInvokeByJson(jsonStr, funcName string, expectResult interface{}) error 
 		return err
 	}
 
-	if resultData, ok := result[funcName]; !ok {
+	if resultData, ok := result["error"]; ok {
+
+		return errors.New(fmt.Sprintf("err:%v", resultData))
+
+	} else if resultData, ok = result[funcName]; !ok {
 
 		return errors.New("invoke " + funcName + " error: result not found")
 
@@ -154,7 +163,13 @@ func testInvokeByJson(jsonStr, funcName string, expectResult interface{}) error 
 		var resultDataConvert interface{}
 		switch resultData.(type) {
 		case float64:
-			resultDataConvert = int(resultData.(float64))
+			switch expectResult.(type) {
+			case float64:
+				resultDataConvert = resultData
+			default:
+				resultDataConvert = int(resultData.(float64))
+			}
+
 		default:
 			resultDataConvert = resultData
 		}
@@ -231,6 +246,35 @@ func TestInvokeByJson(t *testing.T) {
 					}
 					`
 	err = testInvokeByJson(jsonDataBarFuncTwo, "BarFuncTwo", -456)
+	if err != nil {
+		t.Error(err)
+	}
+
+	jsonDataBarFuncTwo = `
+					{
+					    "func_name":"BarFuncTwo",
+					    "params":[
+					        false,
+					        "456"
+					    ]
+					}
+					`
+	err = testInvokeByJson(jsonDataBarFuncTwo, "BarFuncTwo", -456)
+	if err != nil {
+		t.Error(err)
+	}
+
+	jsonDataBarFuncAdd := `
+					{
+					    "func_name":"BarFuncAdd",
+					    "params":[
+					        0.5,
+					        0.51
+					    ]
+					}
+					`
+	//这里float64直接比较相等正常？
+	err = testInvokeByJson(jsonDataBarFuncAdd, "BarFuncAdd", 1.01)
 	if err != nil {
 		t.Error(err)
 	}
