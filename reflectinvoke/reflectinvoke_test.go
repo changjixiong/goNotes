@@ -13,17 +13,17 @@ import (
 type Foo struct {
 }
 
-func (foo *Foo) FooFuncZero() bool {
+func (f *Foo) FooFuncZero() bool {
 
 	return true
 }
 
-func (foo *Foo) FooFuncOne(arg int) string {
+func (f *Foo) FooFuncOne(arg int) string {
 
 	return strconv.Itoa(arg)
 }
 
-func (foo *Foo) FooFuncTwo(argStr string, argInt int) string {
+func (f *Foo) FooFuncTwo(argStr string, argInt int) string {
 
 	return argStr + strconv.Itoa(argInt)
 }
@@ -31,16 +31,16 @@ func (foo *Foo) FooFuncTwo(argStr string, argInt int) string {
 type Bar struct {
 }
 
-func (bar *Bar) BarFuncZero() string {
+func (b *Bar) BarFuncZero() string {
 	return fmt.Sprintln("BarFuncZero")
 }
 
-func (bar *Bar) BarFuncOne(arg float64) int {
+func (b *Bar) BarFuncOne(arg float64) int {
 
 	return int(arg)
 }
 
-func (bar *Bar) BarFuncTwo(argStr bool, argInt int) int {
+func (b *Bar) BarFuncTwo(argStr bool, argInt int) int {
 
 	if argStr {
 		return argInt
@@ -49,9 +49,14 @@ func (bar *Bar) BarFuncTwo(argStr bool, argInt int) int {
 	}
 }
 
-func (bar *Bar) BarFuncAdd(argOne, argTwo float64) float64 {
+func (b *Bar) BarFuncAdd(argOne, argTwo float64) float64 {
 
 	return argOne + argTwo
+}
+
+func (b *Bar) BarSwap(argOne, argTwo float64) (float64, float64) {
+
+	return argTwo, argOne
 }
 
 func init() {
@@ -133,37 +138,35 @@ func TestInvokeByInterfaceArgs(t *testing.T) {
 		t.Errorf("invoke BarFuncOne error")
 	}
 
-	resultBarFuncTwo := reflectinvoke.InvokeByInterfaceArgs("BarFuncTwo", []interface{}{false, 456})
+	resultBarFuncTwo := reflectinvoke.InvokeByInterfaceArgs("BarFuncTwo",
+		[]interface{}{false, 456})
 
 	if -456 != resultBarFuncTwo[0].Int() {
 		t.Errorf("invoke BarFuncTwo error")
 	}
 }
 
-func testInvokeByJson(jsonStr, funcName string, expectResult interface{}) error {
+func testInvokeByJson(jsonStr, funcName string, expectResult ...interface{}) error {
 
-	result := make(map[string]interface{})
-
+	result := reflectinvoke.Response{}
 	err := json.Unmarshal(reflectinvoke.InvokeByJson([]byte(jsonStr)), &result)
-
 	if err != nil {
 		return err
 	}
 
-	if resultData, ok := result["error"]; ok {
+	if result.ErrorCode > 0 {
+		return fmt.Errorf("invoke "+funcName+" error: %d", result.ErrorCode)
+	}
 
-		return errors.New(fmt.Sprintf("err:%v", resultData))
+	if len(result.Data) != len(expectResult) {
+		return errors.New("unexpected result")
+	}
 
-	} else if resultData, ok = result[funcName]; !ok {
-
-		return errors.New("invoke " + funcName + " error: result not found")
-
-	} else {
-
+	for i, resultData := range result.Data {
 		var resultDataConvert interface{}
 		switch resultData.(type) {
 		case float64:
-			switch expectResult.(type) {
+			switch expectResult[i].(type) {
 			case float64:
 				resultDataConvert = resultData
 			default:
@@ -173,7 +176,7 @@ func testInvokeByJson(jsonStr, funcName string, expectResult interface{}) error 
 		default:
 			resultDataConvert = resultData
 		}
-		if resultDataConvert != expectResult {
+		if resultDataConvert != expectResult[i] {
 			return errors.New("invoke " + funcName + " error: result not equal")
 		}
 	}
@@ -184,97 +187,119 @@ func testInvokeByJson(jsonStr, funcName string, expectResult interface{}) error 
 func TestInvokeByJson(t *testing.T) {
 
 	var err error
+
 	jsonDataFooFuncZero := `
-				{
-				    "func_name":"FooFuncZero",
-				    "params":[
-				    ]
-				}
-				`
+						{
+						    "func_name":"FooFuncZero",
+						    "params":[
+						    ]
+						}
+						`
+
 	err = testInvokeByJson(jsonDataFooFuncZero, "FooFuncZero", true)
 	if err != nil {
 		t.Error(err)
 	}
 
 	jsonDataFooFuncOne := `
-				{
-				    "func_name":"FooFuncOne",
-				    "params":[
-				        456
-				    ]
-				}
-				`
+							{
+							    "func_name":"FooFuncOne",
+							    "params":[
+							        456
+							    ]
+							}
+							`
 	err = testInvokeByJson(jsonDataFooFuncOne, "FooFuncOne", "456")
 	if err != nil {
 		t.Error(err)
 	}
 
 	jsonDataFooFuncTwo := `
-				{
-				    "func_name":"FooFuncTwo",
-				    "params":[
-				        "str123",
-				        456
-				    ]
-				}
-				`
+							{
+							    "func_name":"FooFuncTwo",
+							    "params":[
+							        "str123",
+							        456
+							    ]
+							}
+							`
 	err = testInvokeByJson(jsonDataFooFuncTwo, "FooFuncTwo", "str123456")
 	if err != nil {
 		t.Error(err)
 	}
 
 	jsonDataBarFuncOne := `
-				{
-				    "func_name":"BarFuncOne",
-				    "params":[
-				        456.0
-				    ]
-				}
-				`
+							{
+							    "func_name":"BarFuncOne",
+							    "params":[
+							        456.0
+							    ]
+							}
+							`
 	err = testInvokeByJson(jsonDataBarFuncOne, "BarFuncOne", 456)
 	if err != nil {
 		t.Error(err)
 	}
 
 	jsonDataBarFuncTwo := `
-					{
-					    "func_name":"BarFuncTwo",
-					    "params":[
-					        false,
-					        456
-					    ]
-					}
-					`
+								{
+								    "func_name":"BarFuncTwo",
+								    "params":[
+								        false,
+								        456
+								    ]
+								}
+								`
 	err = testInvokeByJson(jsonDataBarFuncTwo, "BarFuncTwo", -456)
 	if err != nil {
 		t.Error(err)
 	}
 
 	jsonDataBarFuncTwo = `
-					{
-					    "func_name":"BarFuncTwo",
-					    "params":[
-					        false,
-					        "456"
-					    ]
-					}
-					`
+							{
+							    "func_name":"BarFuncTwo",
+							    "params":[
+							        false,
+							        "456"
+							    ]
+							}
+							`
 	err = testInvokeByJson(jsonDataBarFuncTwo, "BarFuncTwo", -456)
 	if err != nil {
 		t.Error(err)
 	}
 
 	jsonDataBarFuncAdd := `
-					{
-					    "func_name":"BarFuncAdd",
-					    "params":[
-					        0.5,
-					        0.51
-					    ]
-					}
-					`
+								{
+								    "func_name":"BarFuncAdd",
+								    "params":[
+								        0.5,
+								        0.51
+								    ]
+								}
+								`
 	//这里float64直接比较相等正常？
 	err = testInvokeByJson(jsonDataBarFuncAdd, "BarFuncAdd", 1.01)
+	if err != nil {
+		t.Error(err)
+	}
+
+	jsonDataBarFuncSwap := `
+								{
+								    "func_name":"BarSwap",
+								    "params":[
+								        0.1,
+								        0.9
+								    ]
+								}
+								`
+
+	err = testInvokeByJson(jsonDataBarFuncSwap, "BarSwap", 0.1, 0.9)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = testInvokeByJson(jsonDataBarFuncSwap, "BarSwap", 0.9, 0.1)
 	if err != nil {
 		t.Error(err)
 	}

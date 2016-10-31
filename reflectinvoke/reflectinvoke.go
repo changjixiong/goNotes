@@ -25,8 +25,9 @@ type Request struct {
 }
 
 type Response struct {
-	FuncName string        `json:"func_name"`
-	Data     []interface{} `json:"data"`
+	FuncName  string        `json:"func_name"`
+	Data      []interface{} `json:"data"`
+	ErrorCode int           `json:"errorcode"`
 }
 
 var methodStruct MethodMap = MethodMap{make(map[string]*MethodInfo)}
@@ -134,18 +135,16 @@ func InvokeByInterfaceArgs(funcName string, Params []interface{}) []reflect.Valu
 	return methodStruct.Methods[funcName].Host.MethodByName(funcName).Call(paramsValue)
 }
 
-func InvokeByValues(methodInfo *MethodInfo, params []reflect.Value) (
-	data map[string]interface{}) {
+func InvokeByValues(methodInfo *MethodInfo, params []reflect.Value) *Response {
 
-	data = make(map[string]interface{})
+	data := &Response{}
+	data.FuncName = methodInfo.Method.Name
 	result := methodInfo.Host.Method(methodInfo.Idx).Call(params)
-	if len(result) > 0 {
-		data[methodInfo.Method.Name] = result[0].Interface()
-	} else {
-		data[methodInfo.Method.Name] = nil
+	for _, x := range result {
+		data.Data = append(data.Data, x.Interface())
 	}
 
-	return
+	return data
 }
 
 func InvokeByJson(byteData []byte) []byte {
@@ -153,17 +152,17 @@ func InvokeByJson(byteData []byte) []byte {
 	req := &Request{}
 	err := json.Unmarshal(byteData, req)
 
-	resultData := make(map[string]interface{})
+	resultData := &Response{}
 
 	if err != nil {
-		resultData = map[string]interface{}{"Error": err.Error()}
+		resultData.ErrorCode = 1
 	} else {
-
 		methodInfo := methodStruct.Methods[req.FuncName]
 		paramsValue, err := convertParam(methodInfo, req.Params)
 
 		if err != nil {
-			resultData["error"] = err.Error()
+			resultData.FuncName = req.FuncName
+			resultData.ErrorCode = 2
 		} else {
 			resultData = InvokeByValues(methodInfo, paramsValue)
 		}
@@ -173,5 +172,4 @@ func InvokeByJson(byteData []byte) []byte {
 	data, _ := json.Marshal(resultData)
 
 	return data
-
 }
