@@ -8,7 +8,7 @@ type {{.ModelName | firstCharUpper}} struct {
 
 var Default{{.ModelName | firstCharUpper}} = &{{.ModelName | firstCharUpper}}{}
 
-func (m *{{.ModelName | firstCharUpper}}) GetByPK(id int) (*{{.ModelName | firstCharUpper}}, bool) {
+func (m *{{.ModelName | firstCharUpper}}) GetByPK({{.PkWithType | joinByComma}}) (*{{.ModelName | firstCharUpper}}, bool) {
 	obj := &{{.ModelName | firstCharUpper}}{}
 	sql := "select * from {{.BDName}}.{{.TableName}} where id=? "
 	err := dbhelper.DB.Get(obj, sql,
@@ -27,7 +27,7 @@ func (m *{{.ModelName | firstCharUpper}}) Insert({{$modelName}} *{{.ModelName | 
 }
 
 func (m *{{.ModelName | firstCharUpper}}) InsertTx(ext sqlx.Ext, {{$modelName}} *{{.ModelName | firstCharUpper}}) (int64, error) {
-	sql := "insert into {{.BDName}}.{{.TableName}}({{.TableSchema | joinByComma}}) values({{.TableSchema | joinQuestionMarkByComma}})"
+	sql := "insert into {{.BDName}}.{{.TableName}}({{.ColumnNames | joinByComma}}) values({{.TableSchema | joinQuestionMarkByComma}})"
 	result, err := ext.Exec(sql,
 		{{range .TableSchema}}{{$modelName}}.{{.COLUMN_NAME | exportColumn}},
 		{{end}}

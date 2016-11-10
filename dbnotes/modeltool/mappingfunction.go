@@ -61,6 +61,7 @@ func typeConvert(str string) string {
 	}
 }
 
+/*
 func joinByComma(tableSchema *[]TABLE_SCHEMA) string {
 	columns := make([]string, 0, len(*tableSchema))
 	for _, t := range *tableSchema {
@@ -69,10 +70,10 @@ func joinByComma(tableSchema *[]TABLE_SCHEMA) string {
 
 	return strings.Join(columns, ",")
 }
+*/
+func joinByComma(src []string) string {
 
-func joinByComma2(src []string) string {
-
-	return strings.Join(src, ",\n")
+	return strings.Join(src, ",")
 }
 
 func joinQuestionMarkByComma(tableSchema *[]TABLE_SCHEMA) string {

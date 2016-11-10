@@ -30,6 +30,7 @@ type ModelInfo struct {
 type TABLE_SCHEMA struct {
 	COLUMN_NAME    string `db:"COLUMN_NAME" json:"column_name"`
 	DATA_TYPE      string `db:"DATA_TYPE" json:"data_type"`
+	COLUMN_KEY     string `db:"COLUMN_KEY" json:"column_key"`
 	COLUMN_COMMENT string `db:"COLUMN_COMMENT" json:"COLUMN_COMMENT"`
 }
 
@@ -42,10 +43,30 @@ func (m *ModelInfo) ColumnWithModelName() []string {
 	return result
 }
 
+func (m *ModelInfo) ColumnNames() []string {
+	result := make([]string, 0, len(*m.TableSchema))
+	for _, t := range *m.TableSchema {
+
+		result = append(result, t.COLUMN_NAME)
+
+	}
+	return result
+}
+
+func (m *ModelInfo) PkWithType() []string {
+	result := make([]string, 0, len(*m.TableSchema))
+	for _, t := range *m.TableSchema {
+		if t.COLUMN_KEY == "PRI" {
+			result = append(result, t.COLUMN_NAME+" "+typeConvert(t.DATA_TYPE))
+		}
+	}
+	return result
+}
+
 func genModelFile(render *template.Template, dbName, tableName string) {
 	tableSchema := &[]TABLE_SCHEMA{}
 	err := dbhelper.DB.Select(tableSchema,
-		"SELECT COLUMN_NAME, DATA_TYPE,COLUMN_COMMENT from COLUMNS where "+
+		"SELECT COLUMN_NAME, DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from COLUMNS where "+
 			"TABLE_NAME"+"='"+tableName+"' and "+"table_schema = '"+dbName+"'")
 
 	if err != nil {
@@ -89,7 +110,6 @@ func main() {
 			"tags":                    tags,
 			"exportColumn":            exportColumn,
 			"joinByComma":             joinByComma,
-			"joinByComma2":            joinByComma2,
 			"joinQuestionMarkByComma": joinQuestionMarkByComma}).
 		Parse(string(data)))
 
