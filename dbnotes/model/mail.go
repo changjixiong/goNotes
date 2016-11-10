@@ -9,13 +9,13 @@ import (
 )
 
 type Mail struct {
-	Id         int        `db:"id" json:"id"`                   //
-	SenderId   int        `db:"sender_id" json:"sender_id"`     //
-	ReceiverId int        `db:"receiver_id" json:"receiver_id"` //
-	Title      string     `db:"title" json:"title"`
-	Content    string     `db:"content" json:"content"`
-	Status     int8       `db:"status" json:"status"`         //
-	Createtime *time.Time `db:"createtime" json:"createtime"` //
+	ID         int        `db:"id" json:"id"`                   //
+	SenderID   int        `db:"sender_id" json:"sender_id"`     //
+	ReceiverID int        `db:"receiver_id" json:"receiver_id"` //
+	Title      string     `db:"title" json:"title"`             //
+	Content    string     `db:"content" json:"content"`         //
+	Status     int8       `db:"status" json:"status"`           //
+	Createtime *time.Time `db:"createtime" json:"createtime"`   //
 }
 
 var DefaultMail = &Mail{}
@@ -39,10 +39,11 @@ func (m *Mail) Insert(mail *Mail) (int64, error) {
 }
 
 func (m *Mail) InsertTx(ext sqlx.Ext, mail *Mail) (int64, error) {
-	sql := "insert into dbnote.Mail(sender_id,receiver_id,title,content,status,createtime) values(?,?,?,?,?,?)"
+	sql := "insert into dbnote.mail(id,sender_id,receiver_id,title,content,status,createtime) values(?,?,?,?,?,?,?)"
 	result, err := ext.Exec(sql,
-		mail.SenderId,
-		mail.ReceiverId,
+		mail.ID,
+		mail.SenderID,
+		mail.ReceiverID,
 		mail.Title,
 		mail.Content,
 		mail.Status,
@@ -60,7 +61,7 @@ func (m *Mail) QueryByMap(ma map[string]interface{}) ([]*Mail, error) {
 	result := []*Mail{}
 	var params []interface{}
 
-	sql := "select * from dbnote.Mail where 1=1 "
+	sql := "select * from dbnote.mail where 1=1 "
 	for k, v := range ma {
 		sql += fmt.Sprintf(" and %s=? ", k)
 		params = append(params, v)

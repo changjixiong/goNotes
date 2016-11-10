@@ -8,30 +8,30 @@ import (
 
 func main() {
 
-	msg := &model.Msg{SenderId: 123,
-		ReceiverId: 234,
+	msg := &model.Msg{SenderID: 123,
+		ReceiverID: 234,
 		Content:    "abc",
 		Status:     0}
 
 	model.DefaultMsg.Insert(msg)
 
-	msg = &model.Msg{SenderId: 123,
-		ReceiverId: 234,
+	msg = &model.Msg{SenderID: 123,
+		ReceiverID: 234,
 		Content:    "def",
 		Status:     0}
 
 	model.DefaultMsg.Insert(msg)
 
-	mail := &model.Mail{SenderId: 123,
-		ReceiverId: 234,
+	mail := &model.Mail{SenderID: 123,
+		ReceiverID: 234,
 		Title:      "t1",
 		Content:    "abc",
 		Status:     0}
 
 	model.DefaultMail.Insert(mail)
 
-	mail = &model.Mail{SenderId: 123,
-		ReceiverId: 234,
+	mail = &model.Mail{SenderID: 123,
+		ReceiverID: 234,
 		Title:      "t2",
 		Content:    "abc",
 		Status:     0}

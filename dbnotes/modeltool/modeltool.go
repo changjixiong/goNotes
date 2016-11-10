@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 /*
@@ -21,6 +20,8 @@ SELECT
         WHERE TABLE_NAME = 'mail'  and TABLE_SCHEMA = 'dbnote'
 */
 type ModelInfo struct {
+	BDName      string
+	TableName   string
 	PackageName string
 	ModelName   string
 	TableSchema *[]TABLE_SCHEMA
@@ -32,21 +33,27 @@ type TABLE_SCHEMA struct {
 	COLUMN_COMMENT string `db:"COLUMN_COMMENT" json:"COLUMN_COMMENT"`
 }
 
+func (m *ModelInfo) ColumnWithModelName() []string {
+	result := make([]string, 0, len(*m.TableSchema))
+	for _, t := range *m.TableSchema {
+		result = append(result, m.ModelName+"."+exportColumn(t.COLUMN_NAME))
+	}
+
+	return result
+}
+
 func genModelFile(render *template.Template, dbName, tableName string) {
 	tableSchema := &[]TABLE_SCHEMA{}
 	err := dbhelper.DB.Select(tableSchema,
 		"SELECT COLUMN_NAME, DATA_TYPE,COLUMN_COMMENT from COLUMNS where "+
 			"TABLE_NAME"+"='"+tableName+"' and "+"table_schema = '"+dbName+"'")
-	//fmt.Println(tableSchema)
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	//return
-
-	fileName := tableName + ".go"
+	fileName := "../model/" + tableName + ".go"
 
 	os.Remove(fileName)
 	f, err := os.Create(fileName)
@@ -56,7 +63,10 @@ func genModelFile(render *template.Template, dbName, tableName string) {
 	}
 	defer f.Close()
 
-	model := &ModelInfo{PackageName: "model",
+	model := &ModelInfo{
+		PackageName: "model",
+		BDName:      dbName,
+		TableName:   tableName,
 		ModelName:   tableName,
 		TableSchema: tableSchema}
 
@@ -69,71 +79,18 @@ func genModelFile(render *template.Template, dbName, tableName string) {
 	cmd.Run()
 }
 
-func firstCharUpper(str string) string {
-	if len(str) > 0 {
-		return strings.ToUpper(str[0:1]) + str[1:]
-	} else {
-		return ""
-	}
-}
-
-func tags(columnName string) template.HTML {
-
-	return template.HTML("`db:" + `"` + columnName + `"` +
-		" json:" + `"` + columnName + "\"`")
-}
-
-func exportColumn(columnName string) string {
-	columnItems := strings.Split(columnName, "_")
-	columnItems[0] = firstCharUpper(columnItems[0])
-	for i := 0; i < len(columnItems); i++ {
-		if strings.ToUpper(columnItems[i]) == "ID" {
-			columnItems[i] = "ID"
-		}
-	}
-
-	return strings.Join(columnItems, "")
-
-}
-
-func typeConvert(str string) string {
-
-	switch str {
-	case "smallint", "tinyint":
-		return "int8"
-
-	case "varchar", "text", "longtext", "char":
-		return "string"
-
-	case "date":
-		return "string"
-
-	case "int":
-		return "int"
-
-	case "timestamp":
-		return "*time.Time"
-
-	case "bigint":
-		return "int64"
-
-	case "float", "double", "decimal":
-		return "float64"
-
-	default:
-		return str
-	}
-}
-
 func main() {
 
 	data, _ := ioutil.ReadFile("model.tpl")
 	render := template.Must(template.New("model").
 		Funcs(template.FuncMap{
-			"firstCharUpper": firstCharUpper,
-			"typeConvert":    typeConvert,
-			"tags":           tags,
-			"exportColumn":   exportColumn}).
+			"firstCharUpper":          firstCharUpper,
+			"typeConvert":             typeConvert,
+			"tags":                    tags,
+			"exportColumn":            exportColumn,
+			"joinByComma":             joinByComma,
+			"joinByComma2":            joinByComma2,
+			"joinQuestionMarkByComma": joinQuestionMarkByComma}).
 		Parse(string(data)))
 
 	dbName := "dbnote"
