@@ -61,19 +61,29 @@ func typeConvert(str string) string {
 	}
 }
 
-/*
-func joinByComma(tableSchema *[]TABLE_SCHEMA) string {
-	columns := make([]string, 0, len(*tableSchema))
-	for _, t := range *tableSchema {
-		columns = append(columns, t.COLUMN_NAME)
-	}
-
-	return strings.Join(columns, ",")
+func join(a []string, sep string) string {
+	return strings.Join(a, sep)
 }
-*/
-func joinByComma(src []string) string {
 
-	return strings.Join(src, ",")
+func pkWithType(table_schema []TABLE_SCHEMA) string {
+	result := make([]string, 0, len(table_schema))
+	for _, t := range table_schema {
+		result = append(result, t.COLUMN_NAME+" "+typeConvert(t.DATA_TYPE))
+	}
+	return strings.Join(result, ",")
+}
+
+func pkWithPostfix(table_schema []TABLE_SCHEMA, Postfix, sep string) string {
+	result := make([]string, 0, len(table_schema))
+	for _, t := range table_schema {
+		result = append(result, t.COLUMN_NAME+Postfix)
+	}
+	return strings.Join(result, sep)
+}
+
+func makeQuestionMarkList(num int) string {
+	a := strings.Repeat("?,", num)
+	return a[:len(a)-1]
 }
 
 func joinQuestionMarkByComma(tableSchema *[]TABLE_SCHEMA) string {

@@ -21,7 +21,7 @@ var DefaultMsg = &Msg{}
 
 func (m *Msg) GetByPK(id int) (*Msg, bool) {
 	obj := &Msg{}
-	sql := "select * from dbnote.msg where id=? "
+	sql := "select * from dbnote.msg where id=?"
 	err := dbhelper.DB.Get(obj, sql,
 		id,
 	)

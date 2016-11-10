@@ -53,11 +53,25 @@ func (m *ModelInfo) ColumnNames() []string {
 	return result
 }
 
-func (m *ModelInfo) PkWithType() []string {
+func (m *ModelInfo) ColumnCount() int {
+	return len(*m.TableSchema)
+}
+
+func (m *ModelInfo) PkColumnsSchema() []TABLE_SCHEMA {
+	result := make([]TABLE_SCHEMA, 0, len(*m.TableSchema))
+	for _, t := range *m.TableSchema {
+		if t.COLUMN_KEY == "PRI" {
+			result = append(result, t)
+		}
+	}
+	return result
+}
+
+func (m *ModelInfo) PkColumns() []string {
 	result := make([]string, 0, len(*m.TableSchema))
 	for _, t := range *m.TableSchema {
 		if t.COLUMN_KEY == "PRI" {
-			result = append(result, t.COLUMN_NAME+" "+typeConvert(t.DATA_TYPE))
+			result = append(result, t.COLUMN_NAME)
 		}
 	}
 	return result
@@ -105,12 +119,15 @@ func main() {
 	data, _ := ioutil.ReadFile("model.tpl")
 	render := template.Must(template.New("model").
 		Funcs(template.FuncMap{
-			"firstCharUpper":          firstCharUpper,
-			"typeConvert":             typeConvert,
-			"tags":                    tags,
-			"exportColumn":            exportColumn,
-			"joinByComma":             joinByComma,
-			"joinQuestionMarkByComma": joinQuestionMarkByComma}).
+			"firstCharUpper":       firstCharUpper,
+			"typeConvert":          typeConvert,
+			"tags":                 tags,
+			"exportColumn":         exportColumn,
+			"join":                 join,
+			"makeQuestionMarkList": makeQuestionMarkList,
+			"pkWithType":           pkWithType,
+			"pkWithPostfix":        pkWithPostfix,
+		}).
 		Parse(string(data)))
 
 	dbName := "dbnote"

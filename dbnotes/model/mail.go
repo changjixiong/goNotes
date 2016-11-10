@@ -22,7 +22,7 @@ var DefaultMail = &Mail{}
 
 func (m *Mail) GetByPK(id int) (*Mail, bool) {
 	obj := &Mail{}
-	sql := "select * from dbnote.mail where id=? "
+	sql := "select * from dbnote.mail where id=?"
 	err := dbhelper.DB.Get(obj, sql,
 		id,
 	)
