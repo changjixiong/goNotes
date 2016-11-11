@@ -11,7 +11,7 @@ var Default{{$exportModelName}} = &{{$exportModelName}}{}
 
 func (m *{{$exportModelName}}) GetByPK({{.PkColumnsSchema | columnAndType}}) (*{{$exportModelName}}, bool) {
 	obj := &{{$exportModelName}}{}
-	sql := "select * from {{.BDName}}.{{.TableName}} where {{pkWithPostfix .PkColumnsSchema "=?" " and "}}"
+	sql := "select * from {{.BDName}}.{{.TableName}} where {{columnWithPostfix .PkColumns "=?" " and "}}"
 	err := dbhelper.DB.Get(obj, sql,
 		{{range $K:=.PkColumns}}{{$K}},
 		{{end}}
@@ -47,7 +47,7 @@ func (m *{{$exportModelName}}) Update() error {
 }
 
 func (m *{{$exportModelName}}) UpdateTx(ext sqlx.Ext) error {
-	sql := `update {{.BDName}}.{{.TableName}} set {{pkWithPostfix .NoPkColumnsSchema "=?" ","}} where {{pkWithPostfix .PkColumnsSchema "=?" " and "}}`
+	sql := `update {{.BDName}}.{{.TableName}} set {{columnWithPostfix .NoPkColumns "=?" ","}} where {{columnWithPostfix .PkColumns "=?" " and "}}`
 	_, err := ext.Exec(sql,
 		{{range .NoPkColumns}}m.{{. | exportColumn}},
 		{{end}}{{range .PkColumns}}m.{{. | exportColumn}},

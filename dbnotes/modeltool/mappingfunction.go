@@ -73,10 +73,10 @@ func columnAndType(table_schema []TABLE_SCHEMA) string {
 	return strings.Join(result, ",")
 }
 
-func pkWithPostfix(table_schema []TABLE_SCHEMA, Postfix, sep string) string {
-	result := make([]string, 0, len(table_schema))
-	for _, t := range table_schema {
-		result = append(result, t.COLUMN_NAME+Postfix)
+func columnWithPostfix(columns []string, Postfix, sep string) string {
+	result := make([]string, 0, len(columns))
+	for _, t := range columns {
+		result = append(result, t+Postfix)
 	}
 	return strings.Join(result, sep)
 }
@@ -86,6 +86,7 @@ func makeQuestionMarkList(num int) string {
 	return a[:len(a)-1]
 }
 
+/*
 func joinQuestionMarkByComma(tableSchema *[]TABLE_SCHEMA) string {
 	columns := make([]string, 0, len(*tableSchema))
 	for _, _ = range *tableSchema {
@@ -94,3 +95,4 @@ func joinQuestionMarkByComma(tableSchema *[]TABLE_SCHEMA) string {
 
 	return strings.Join(columns, ",")
 }
+*/

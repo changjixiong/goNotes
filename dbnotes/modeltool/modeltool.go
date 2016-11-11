@@ -86,18 +86,6 @@ func (m *ModelInfo) PkColumns() []string {
 	return result
 }
 
-/*
-func (m *ModelInfo) PkColumns() []string {
-	result := make([]string, 0, len(*m.TableSchema))
-	for _, t := range *m.TableSchema {
-		if t.COLUMN_KEY == "PRI" {
-			result = append(result, t.COLUMN_NAME)
-		}
-	}
-	return result
-}
-*/
-
 func genModelFile(render *template.Template, dbName, tableName string) {
 	tableSchema := &[]TABLE_SCHEMA{}
 	err := dbhelper.DB.Select(tableSchema,
@@ -147,7 +135,7 @@ func main() {
 			"join":                 join,
 			"makeQuestionMarkList": makeQuestionMarkList,
 			"columnAndType":        columnAndType,
-			"pkWithPostfix":        pkWithPostfix,
+			"columnWithPostfix":    columnWithPostfix,
 		}).
 		Parse(string(data)))
 
