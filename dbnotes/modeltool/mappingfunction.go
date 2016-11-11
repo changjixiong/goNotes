@@ -65,7 +65,7 @@ func join(a []string, sep string) string {
 	return strings.Join(a, sep)
 }
 
-func pkWithType(table_schema []TABLE_SCHEMA) string {
+func columnAndType(table_schema []TABLE_SCHEMA) string {
 	result := make([]string, 0, len(table_schema))
 	for _, t := range table_schema {
 		result = append(result, t.COLUMN_NAME+" "+typeConvert(t.DATA_TYPE))

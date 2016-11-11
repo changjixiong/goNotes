@@ -43,10 +43,15 @@ func main() {
 	for _, m := range msgs {
 		fmt.Println(m)
 	}
+	msgs[1].Content = "update"
+	msgs[1].Update()
 
 	for _, m := range mails {
 		fmt.Println(m)
 	}
+
+	mails[1].Content = "update"
+	mails[1].Update()
 
 	fmt.Println("OK")
 

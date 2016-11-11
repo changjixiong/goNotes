@@ -9,7 +9,7 @@ type {{$exportModelName}} struct {
 var Default{{$exportModelName}} = &{{$exportModelName}}{}
 
 
-func (m *{{$exportModelName}}) GetByPK({{.PkColumnsSchema | pkWithType}}) (*{{$exportModelName}}, bool) {
+func (m *{{$exportModelName}}) GetByPK({{.PkColumnsSchema | columnAndType}}) (*{{$exportModelName}}, bool) {
 	obj := &{{$exportModelName}}{}
 	sql := "select * from {{.BDName}}.{{.TableName}} where {{pkWithPostfix .PkColumnsSchema "=?" " and "}}"
 	err := dbhelper.DB.Get(obj, sql,

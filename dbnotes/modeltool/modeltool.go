@@ -34,16 +34,6 @@ type TABLE_SCHEMA struct {
 	COLUMN_COMMENT string `db:"COLUMN_COMMENT" json:"COLUMN_COMMENT"`
 }
 
-/*
-func (m *ModelInfo) ColumnWithModelName() []string {
-	result := make([]string, 0, len(*m.TableSchema))
-	for _, t := range *m.TableSchema {
-		result = append(result, m.ModelName+"."+exportColumn(t.COLUMN_NAME))
-	}
-
-	return result
-}
-*/
 func (m *ModelInfo) ColumnNames() []string {
 	result := make([]string, 0, len(*m.TableSchema))
 	for _, t := range *m.TableSchema {
@@ -156,7 +146,7 @@ func main() {
 			"exportColumn":         exportColumn,
 			"join":                 join,
 			"makeQuestionMarkList": makeQuestionMarkList,
-			"pkWithType":           pkWithType,
+			"columnAndType":        columnAndType,
 			"pkWithPostfix":        pkWithPostfix,
 		}).
 		Parse(string(data)))
