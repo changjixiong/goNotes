@@ -42,6 +42,19 @@ func (m *{{$exportModelName}}) InsertTx(ext sqlx.Ext) (int64, error) {
 	return affected, nil
 }
 
+func (m *{{$exportModelName}}) Delete() error {
+	return m.DeleteTx(dbhelper.DB)
+}
+
+func (m *{{$exportModelName}}) DeleteTx(ext sqlx.Ext) error {
+	sql := `delete from {{.BDName}}.{{.TableName}} where {{columnWithPostfix .PkColumns "=?" " and "}}`
+	_, err := ext.Exec(sql,
+		{{range .PkColumns}}m.{{. | exportColumn}},
+		{{end}}
+	)
+	return err
+}
+
 func (m *{{$exportModelName}}) Update() error {
 	return m.UpdateTx(dbhelper.DB)
 }

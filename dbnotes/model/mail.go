@@ -57,6 +57,18 @@ func (m *Mail) InsertTx(ext sqlx.Ext) (int64, error) {
 	return affected, nil
 }
 
+func (m *Mail) Delete() error {
+	return m.DeleteTx(dbhelper.DB)
+}
+
+func (m *Mail) DeleteTx(ext sqlx.Ext) error {
+	sql := `delete from dbnote.mail where id=?`
+	_, err := ext.Exec(sql,
+		m.ID,
+	)
+	return err
+}
+
 func (m *Mail) Update() error {
 	return m.UpdateTx(dbhelper.DB)
 }
