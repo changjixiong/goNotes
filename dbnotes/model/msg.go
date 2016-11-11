@@ -33,19 +33,19 @@ func (m *Msg) GetByPK(id int) (*Msg, bool) {
 	return obj, true
 }
 
-func (m *Msg) Insert(msg *Msg) (int64, error) {
-	return m.InsertTx(dbhelper.DB, msg)
+func (m *Msg) Insert() (int64, error) {
+	return m.InsertTx(dbhelper.DB)
 }
 
-func (m *Msg) InsertTx(ext sqlx.Ext, msg *Msg) (int64, error) {
+func (m *Msg) InsertTx(ext sqlx.Ext) (int64, error) {
 	sql := "insert into dbnote.msg(id,sender_id,receiver_id,content,status,createtime) values(?,?,?,?,?,?)"
 	result, err := ext.Exec(sql,
-		msg.ID,
-		msg.SenderID,
-		msg.ReceiverID,
-		msg.Content,
-		msg.Status,
-		msg.Createtime,
+		m.ID,
+		m.SenderID,
+		m.ReceiverID,
+		m.Content,
+		m.Status,
+		m.Createtime,
 	)
 	if err != nil {
 		fmt.Println(err)

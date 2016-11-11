@@ -12,15 +12,14 @@ func main() {
 		ReceiverID: 234,
 		Content:    "abc",
 		Status:     0}
-
-	model.DefaultMsg.Insert(msg)
+	msg.Insert()
 
 	msg = &model.Msg{SenderID: 123,
 		ReceiverID: 234,
 		Content:    "def",
 		Status:     0}
 
-	model.DefaultMsg.Insert(msg)
+	msg.Insert()
 
 	mail := &model.Mail{SenderID: 123,
 		ReceiverID: 234,
@@ -28,7 +27,7 @@ func main() {
 		Content:    "abc",
 		Status:     0}
 
-	model.DefaultMail.Insert(mail)
+	mail.Insert()
 
 	mail = &model.Mail{SenderID: 123,
 		ReceiverID: 234,
@@ -36,7 +35,7 @@ func main() {
 		Content:    "abc",
 		Status:     0}
 
-	model.DefaultMail.Insert(mail)
+	mail.Insert()
 
 	msgs, _ := model.DefaultMsg.QueryByMap(map[string]interface{}{"content": "def"})
 	mails, _ := model.DefaultMail.QueryByMap(map[string]interface{}{"Title": "t1"})

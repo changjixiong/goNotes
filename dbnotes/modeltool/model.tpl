@@ -1,16 +1,16 @@
-{{$modelName := .ModelName}}
+{{$exportModelName := .ModelName | firstCharUpper}}
 
 package {{.PackageName}}
 
-type {{.ModelName | firstCharUpper}} struct {
+type {{$exportModelName}} struct {
 {{range .TableSchema}} {{.COLUMN_NAME | exportColumn}} {{.DATA_TYPE | typeConvert}} {{.COLUMN_NAME | tags}} // {{.COLUMN_COMMENT}}
 {{end}}}
 
-var Default{{.ModelName | firstCharUpper}} = &{{.ModelName | firstCharUpper}}{}
+var Default{{$exportModelName}} = &{{$exportModelName}}{}
 
 
-func (m *{{.ModelName | firstCharUpper}}) GetByPK({{.PkColumnsSchema | pkWithType}}) (*{{.ModelName | firstCharUpper}}, bool) {
-	obj := &{{.ModelName | firstCharUpper}}{}
+func (m *{{$exportModelName}}) GetByPK({{.PkColumnsSchema | pkWithType}}) (*{{$exportModelName}}, bool) {
+	obj := &{{$exportModelName}}{}
 	sql := "select * from {{.BDName}}.{{.TableName}} where {{pkWithPostfix .PkColumnsSchema "=?" " and "}}"
 	err := dbhelper.DB.Get(obj, sql,
 		{{range $K:=.PkColumns}}{{$K}},
@@ -24,14 +24,14 @@ func (m *{{.ModelName | firstCharUpper}}) GetByPK({{.PkColumnsSchema | pkWithTyp
 	return obj, true
 }
 
-func (m *{{.ModelName | firstCharUpper}}) Insert({{$modelName}} *{{.ModelName | firstCharUpper}}) (int64, error) {
-	return m.InsertTx(dbhelper.DB, {{$modelName}})
+func (m *{{$exportModelName}}) Insert() (int64, error) {
+	return m.InsertTx(dbhelper.DB)
 }
 
-func (m *{{.ModelName | firstCharUpper}}) InsertTx(ext sqlx.Ext, {{$modelName}} *{{.ModelName | firstCharUpper}}) (int64, error) {
+func (m *{{$exportModelName}}) InsertTx(ext sqlx.Ext) (int64, error) {
 	sql := "insert into {{.BDName}}.{{.TableName}}({{join .ColumnNames ","}}) values({{.ColumnCount | makeQuestionMarkList}})"
 	result, err := ext.Exec(sql,
-		{{range .TableSchema}}{{$modelName}}.{{.COLUMN_NAME | exportColumn}},
+		{{range .TableSchema}}m.{{.COLUMN_NAME | exportColumn}},
 		{{end}}
 	)
 	if err != nil {
@@ -42,8 +42,8 @@ func (m *{{.ModelName | firstCharUpper}}) InsertTx(ext sqlx.Ext, {{$modelName}} 
 	return affected, nil
 }
 
-func (m *{{.ModelName | firstCharUpper}}) QueryByMap(ma map[string]interface{}) ([]*{{.ModelName | firstCharUpper}}, error) {
-	result := []*{{.ModelName | firstCharUpper}}{}
+func (m *{{$exportModelName}}) QueryByMap(ma map[string]interface{}) ([]*{{$exportModelName}}, error) {
+	result := []*{{$exportModelName}}{}
 	var params []interface{}
 
 	sql := "select * from {{.BDName}}.{{.TableName}} where 1=1 "
