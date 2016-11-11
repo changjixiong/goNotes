@@ -34,6 +34,7 @@ type TABLE_SCHEMA struct {
 	COLUMN_COMMENT string `db:"COLUMN_COMMENT" json:"COLUMN_COMMENT"`
 }
 
+/*
 func (m *ModelInfo) ColumnWithModelName() []string {
 	result := make([]string, 0, len(*m.TableSchema))
 	for _, t := range *m.TableSchema {
@@ -42,7 +43,7 @@ func (m *ModelInfo) ColumnWithModelName() []string {
 
 	return result
 }
-
+*/
 func (m *ModelInfo) ColumnNames() []string {
 	result := make([]string, 0, len(*m.TableSchema))
 	for _, t := range *m.TableSchema {
@@ -67,6 +68,35 @@ func (m *ModelInfo) PkColumnsSchema() []TABLE_SCHEMA {
 	return result
 }
 
+func (m *ModelInfo) NoPkColumnsSchema() []TABLE_SCHEMA {
+	result := make([]TABLE_SCHEMA, 0, len(*m.TableSchema))
+	for _, t := range *m.TableSchema {
+		if t.COLUMN_KEY != "PRI" {
+			result = append(result, t)
+		}
+	}
+	return result
+}
+
+func (m *ModelInfo) NoPkColumns() []string {
+	noPkColumnsSchema := m.NoPkColumnsSchema()
+	result := make([]string, 0, len(noPkColumnsSchema))
+	for _, t := range noPkColumnsSchema {
+		result = append(result, t.COLUMN_NAME)
+	}
+	return result
+}
+
+func (m *ModelInfo) PkColumns() []string {
+	pkColumnsSchema := m.PkColumnsSchema()
+	result := make([]string, 0, len(pkColumnsSchema))
+	for _, t := range pkColumnsSchema {
+		result = append(result, t.COLUMN_NAME)
+	}
+	return result
+}
+
+/*
 func (m *ModelInfo) PkColumns() []string {
 	result := make([]string, 0, len(*m.TableSchema))
 	for _, t := range *m.TableSchema {
@@ -76,6 +106,7 @@ func (m *ModelInfo) PkColumns() []string {
 	}
 	return result
 }
+*/
 
 func genModelFile(render *template.Template, dbName, tableName string) {
 	tableSchema := &[]TABLE_SCHEMA{}

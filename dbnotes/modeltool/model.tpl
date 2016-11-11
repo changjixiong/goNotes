@@ -42,6 +42,26 @@ func (m *{{$exportModelName}}) InsertTx(ext sqlx.Ext) (int64, error) {
 	return affected, nil
 }
 
+func (m *{{$exportModelName}}) Update() error {
+	return m.UpdateTx(dbhelper.DB)
+}
+
+func (m *{{$exportModelName}}) UpdateTx(ext sqlx.Ext) error {
+	sql := `update {{.BDName}}.{{.TableName}} set {{pkWithPostfix .NoPkColumnsSchema "=?" ","}} where {{pkWithPostfix .PkColumnsSchema "=?" " and "}}`
+	_, err := ext.Exec(sql,
+		{{range .NoPkColumns}}m.{{. | exportColumn}},
+		{{end}}{{range .PkColumns}}m.{{. | exportColumn}},
+		{{end}}
+	)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
+}
+
 func (m *{{$exportModelName}}) QueryByMap(ma map[string]interface{}) ([]*{{$exportModelName}}, error) {
 	result := []*{{$exportModelName}}{}
 	var params []interface{}

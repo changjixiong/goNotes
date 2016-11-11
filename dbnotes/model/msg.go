@@ -55,6 +55,29 @@ func (m *Msg) InsertTx(ext sqlx.Ext) (int64, error) {
 	return affected, nil
 }
 
+func (m *Msg) Update() error {
+	return m.UpdateTx(dbhelper.DB)
+}
+
+func (m *Msg) UpdateTx(ext sqlx.Ext) error {
+	sql := `update dbnote.msg set sender_id=?,receiver_id=?,content=?,status=?,createtime=? where id=?`
+	_, err := ext.Exec(sql,
+		m.SenderID,
+		m.ReceiverID,
+		m.Content,
+		m.Status,
+		m.Createtime,
+		m.ID,
+	)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
+}
+
 func (m *Msg) QueryByMap(ma map[string]interface{}) ([]*Msg, error) {
 	result := []*Msg{}
 	var params []interface{}

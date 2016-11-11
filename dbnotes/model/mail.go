@@ -57,6 +57,30 @@ func (m *Mail) InsertTx(ext sqlx.Ext) (int64, error) {
 	return affected, nil
 }
 
+func (m *Mail) Update() error {
+	return m.UpdateTx(dbhelper.DB)
+}
+
+func (m *Mail) UpdateTx(ext sqlx.Ext) error {
+	sql := `update dbnote.mail set sender_id=?,receiver_id=?,title=?,content=?,status=?,createtime=? where id=?`
+	_, err := ext.Exec(sql,
+		m.SenderID,
+		m.ReceiverID,
+		m.Title,
+		m.Content,
+		m.Status,
+		m.Createtime,
+		m.ID,
+	)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
+}
+
 func (m *Mail) QueryByMap(ma map[string]interface{}) ([]*Mail, error) {
 	result := []*Mail{}
 	var params []interface{}
