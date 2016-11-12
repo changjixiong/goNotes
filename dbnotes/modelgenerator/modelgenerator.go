@@ -12,7 +12,7 @@ import (
 )
 
 func genModelFile(render *template.Template, dbName, tableName string) {
-	tableSchema := &[]modeltool.TABLE_SCHEMA{}
+	tableSchema := &[]modeltoolv0.TABLE_SCHEMA{}
 	err := dbhelper.DB.Select(tableSchema,
 		"SELECT COLUMN_NAME, DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from COLUMNS where "+
 			"TABLE_NAME"+"='"+tableName+"' and "+"table_schema = '"+dbName+"'")
@@ -32,7 +32,7 @@ func genModelFile(render *template.Template, dbName, tableName string) {
 	}
 	defer f.Close()
 
-	model := &modeltool.ModelInfo{
+	model := &modeltoolv0.ModelInfo{
 		PackageName: "model",
 		BDName:      dbName,
 		TableName:   tableName,
@@ -53,14 +53,14 @@ func main() {
 	data, _ := ioutil.ReadFile("../modeltool/model.tpl")
 	render := template.Must(template.New("model").
 		Funcs(template.FuncMap{
-			"FirstCharUpper":       modeltool.FirstCharUpper,
-			"TypeConvert":          modeltool.TypeConvert,
-			"Tags":                 modeltool.Tags,
-			"ExportColumn":         modeltool.ExportColumn,
-			"Join":                 modeltool.Join,
-			"MakeQuestionMarkList": modeltool.MakeQuestionMarkList,
-			"ColumnAndType":        modeltool.ColumnAndType,
-			"ColumnWithPostfix":    modeltool.ColumnWithPostfix,
+			"FirstCharUpper":       modeltoolv0.FirstCharUpper,
+			"TypeConvert":          modeltoolv0.TypeConvert,
+			"Tags":                 modeltoolv0.Tags,
+			"ExportColumn":         modeltoolv0.ExportColumn,
+			"Join":                 modeltoolv0.Join,
+			"MakeQuestionMarkList": modeltoolv0.MakeQuestionMarkList,
+			"ColumnAndType":        modeltoolv0.ColumnAndType,
+			"ColumnWithPostfix":    modeltoolv0.ColumnWithPostfix,
 		}).
 		Parse(string(data)))
 

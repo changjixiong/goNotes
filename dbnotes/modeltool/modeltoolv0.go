@@ -1,4 +1,4 @@
-package modeltool
+package modeltoolv0
 
 import (
 	"html/template"
