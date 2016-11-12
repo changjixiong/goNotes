@@ -1,13 +1,8 @@
-package main
+package modeltool
 
 import (
-	"fmt"
-	"goNotes/dbnotes/dbhelper"
 	"html/template"
-	"io/ioutil"
-	"log"
-	"os"
-	"os/exec"
+	"strings"
 )
 
 /*
@@ -86,73 +81,94 @@ func (m *ModelInfo) PkColumns() []string {
 	return result
 }
 
-func genModelFile(render *template.Template, dbName, tableName string) {
-	tableSchema := &[]TABLE_SCHEMA{}
-	err := dbhelper.DB.Select(tableSchema,
-		"SELECT COLUMN_NAME, DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from COLUMNS where "+
-			"TABLE_NAME"+"='"+tableName+"' and "+"table_schema = '"+dbName+"'")
-
-	if err != nil {
-		fmt.Println(err)
-		return
+func FirstCharUpper(str string) string {
+	if len(str) > 0 {
+		return strings.ToUpper(str[0:1]) + str[1:]
+	} else {
+		return ""
 	}
-
-	fileName := "../model/" + tableName + ".go"
-
-	os.Remove(fileName)
-	f, err := os.Create(fileName)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer f.Close()
-
-	model := &ModelInfo{
-		PackageName: "model",
-		BDName:      dbName,
-		TableName:   tableName,
-		ModelName:   tableName,
-		TableSchema: tableSchema}
-
-	if err := render.Execute(f, model); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(fileName)
-	cmd := exec.Command("goimports", "-w", fileName)
-	//cmd := exec.Command("gofmt", "-w", fileName)
-	cmd.Run()
 }
 
-func main() {
+func Tags(columnName string) template.HTML {
 
-	data, _ := ioutil.ReadFile("model.tpl")
-	render := template.Must(template.New("model").
-		Funcs(template.FuncMap{
-			"firstCharUpper":       firstCharUpper,
-			"typeConvert":          typeConvert,
-			"tags":                 tags,
-			"exportColumn":         exportColumn,
-			"join":                 join,
-			"makeQuestionMarkList": makeQuestionMarkList,
-			"columnAndType":        columnAndType,
-			"columnWithPostfix":    columnWithPostfix,
-		}).
-		Parse(string(data)))
+	return template.HTML("`db:" + `"` + columnName + `"` +
+		" json:" + `"` + columnName + "\"`")
+}
 
-	dbName := "dbnote"
-
-	dbhelper.GetDB("127.0.0.1", 3306, "information_schema", "root", "123456")
-	var tablaNames []string
-	err := dbhelper.DB.Select(&tablaNames,
-		"SELECT table_name from tables where table_schema = '"+dbName+"'")
-	if err != nil {
-		fmt.Println(err)
+func ExportColumn(columnName string) string {
+	columnItems := strings.Split(columnName, "_")
+	columnItems[0] = FirstCharUpper(columnItems[0])
+	for i := 0; i < len(columnItems); i++ {
+		if strings.ToUpper(columnItems[i]) == "ID" {
+			columnItems[i] = "ID"
+		}
 	}
 
-	for _, table := range tablaNames {
-		genModelFile(render, dbName, table)
-	}
-
-	//genModelFile(render, "information_schema", "COLUMNS")
+	return strings.Join(columnItems, "")
 
 }
+
+func TypeConvert(str string) string {
+
+	switch str {
+	case "smallint", "tinyint":
+		return "int8"
+
+	case "varchar", "text", "longtext", "char":
+		return "string"
+
+	case "date":
+		return "string"
+
+	case "int":
+		return "int"
+
+	case "timestamp":
+		return "*time.Time"
+
+	case "bigint":
+		return "int64"
+
+	case "float", "double", "decimal":
+		return "float64"
+
+	default:
+		return str
+	}
+}
+
+func Join(a []string, sep string) string {
+	return strings.Join(a, sep)
+}
+
+func ColumnAndType(table_schema []TABLE_SCHEMA) string {
+	result := make([]string, 0, len(table_schema))
+	for _, t := range table_schema {
+		result = append(result, t.COLUMN_NAME+" "+TypeConvert(t.DATA_TYPE))
+	}
+	return strings.Join(result, ",")
+}
+
+func ColumnWithPostfix(columns []string, Postfix, sep string) string {
+	result := make([]string, 0, len(columns))
+	for _, t := range columns {
+		result = append(result, t+Postfix)
+	}
+	return strings.Join(result, sep)
+}
+
+func MakeQuestionMarkList(num int) string {
+	a := strings.Repeat("?,", num)
+	return a[:len(a)-1]
+}
+
+/*
+func joinQuestionMarkByComma(tableSchema *[]TABLE_SCHEMA) string {
+	columns := make([]string, 0, len(*tableSchema))
+	for _, _ = range *tableSchema {
+		columns = append(columns, "?")
+	}
+
+	return strings.Join(columns, ",")
+}
+*/

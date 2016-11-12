@@ -1,17 +1,17 @@
-{{$exportModelName := .ModelName | firstCharUpper}}
+{{$exportModelName := .ModelName | FirstCharUpper}}
 
 package {{.PackageName}}
 
 type {{$exportModelName}} struct {
-{{range .TableSchema}} {{.COLUMN_NAME | exportColumn}} {{.DATA_TYPE | typeConvert}} {{.COLUMN_NAME | tags}} // {{.COLUMN_COMMENT}}
+{{range .TableSchema}} {{.COLUMN_NAME | ExportColumn}} {{.DATA_TYPE | TypeConvert}} {{.COLUMN_NAME | Tags}} // {{.COLUMN_COMMENT}}
 {{end}}}
 
 var Default{{$exportModelName}} = &{{$exportModelName}}{}
 
 
-func (m *{{$exportModelName}}) GetByPK({{.PkColumnsSchema | columnAndType}}) (*{{$exportModelName}}, bool) {
+func (m *{{$exportModelName}}) GetByPK({{.PkColumnsSchema | ColumnAndType}}) (*{{$exportModelName}}, bool) {
 	obj := &{{$exportModelName}}{}
-	sql := "select * from {{.BDName}}.{{.TableName}} where {{columnWithPostfix .PkColumns "=?" " and "}}"
+	sql := "select * from {{.BDName}}.{{.TableName}} where {{ColumnWithPostfix .PkColumns "=?" " and "}}"
 	err := dbhelper.DB.Get(obj, sql,
 		{{range $K:=.PkColumns}}{{$K}},
 		{{end}}
@@ -29,9 +29,9 @@ func (m *{{$exportModelName}}) Insert() (int64, error) {
 }
 
 func (m *{{$exportModelName}}) InsertTx(ext sqlx.Ext) (int64, error) {
-	sql := "insert into {{.BDName}}.{{.TableName}}({{join .ColumnNames ","}}) values({{.ColumnCount | makeQuestionMarkList}})"
+	sql := "insert into {{.BDName}}.{{.TableName}}({{Join .ColumnNames ","}}) values({{.ColumnCount | MakeQuestionMarkList}})"
 	result, err := ext.Exec(sql,
-		{{range .TableSchema}}m.{{.COLUMN_NAME | exportColumn}},
+		{{range .TableSchema}}m.{{.COLUMN_NAME | ExportColumn}},
 		{{end}}
 	)
 	if err != nil {
@@ -47,9 +47,9 @@ func (m *{{$exportModelName}}) Delete() error {
 }
 
 func (m *{{$exportModelName}}) DeleteTx(ext sqlx.Ext) error {
-	sql := `delete from {{.BDName}}.{{.TableName}} where {{columnWithPostfix .PkColumns "=?" " and "}}`
+	sql := `delete from {{.BDName}}.{{.TableName}} where {{ColumnWithPostfix .PkColumns "=?" " and "}}`
 	_, err := ext.Exec(sql,
-		{{range .PkColumns}}m.{{. | exportColumn}},
+		{{range .PkColumns}}m.{{. | ExportColumn}},
 		{{end}}
 	)
 	return err
@@ -60,10 +60,10 @@ func (m *{{$exportModelName}}) Update() error {
 }
 
 func (m *{{$exportModelName}}) UpdateTx(ext sqlx.Ext) error {
-	sql := `update {{.BDName}}.{{.TableName}} set {{columnWithPostfix .NoPkColumns "=?" ","}} where {{columnWithPostfix .PkColumns "=?" " and "}}`
+	sql := `update {{.BDName}}.{{.TableName}} set {{ColumnWithPostfix .NoPkColumns "=?" ","}} where {{ColumnWithPostfix .PkColumns "=?" " and "}}`
 	_, err := ext.Exec(sql,
-		{{range .NoPkColumns}}m.{{. | exportColumn}},
-		{{end}}{{range .PkColumns}}m.{{. | exportColumn}},
+		{{range .NoPkColumns}}m.{{. | ExportColumn}},
+		{{end}}{{range .PkColumns}}m.{{. | ExportColumn}},
 		{{end}}
 	)
 
