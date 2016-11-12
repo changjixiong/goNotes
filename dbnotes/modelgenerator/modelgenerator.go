@@ -12,9 +12,9 @@ import (
 	"strings"
 )
 
-func genModelFile(render *template.Template, dbName, tableName string) {
-	tableSchema := &[]modeltoolv0.TABLE_SCHEMA{}
-	err := dbhelper.DB.Select(tableSchema,
+func genModelFile(render *template.Template, dbName, dbConnection, tableName string) {
+	tableSchema := &[]modeltool.TABLE_SCHEMA{}
+	err := dbhelper.SYSDB.Select(tableSchema,
 		"SELECT COLUMN_NAME, DATA_TYPE,COLUMN_KEY,COLUMN_COMMENT from COLUMNS where "+
 			"TABLE_NAME"+"='"+tableName+"' and "+"table_schema = '"+dbName+"'")
 
@@ -33,12 +33,13 @@ func genModelFile(render *template.Template, dbName, tableName string) {
 	}
 	defer f.Close()
 
-	model := &modeltoolv0.ModelInfo{
-		PackageName: "model",
-		BDName:      dbName,
-		TableName:   tableName,
-		ModelName:   tableName,
-		TableSchema: tableSchema}
+	model := &modeltool.ModelInfo{
+		PackageName:  "model",
+		BDName:       dbName,
+		DBConnection: dbConnection,
+		TableName:    tableName,
+		ModelName:    tableName,
+		TableSchema:  tableSchema}
 
 	if err := render.Execute(f, model); err != nil {
 		log.Fatal(err)
@@ -54,31 +55,28 @@ func main() {
 	data, _ := ioutil.ReadFile("../modeltool/model.tpl")
 	render := template.Must(template.New("model").
 		Funcs(template.FuncMap{
-			"FirstCharUpper":       modeltoolv0.FirstCharUpper,
-			"TypeConvert":          modeltoolv0.TypeConvert,
-			"Tags":                 modeltoolv0.Tags,
-			"ExportColumn":         modeltoolv0.ExportColumn,
-			"Join":                 modeltoolv0.Join,
-			"MakeQuestionMarkList": modeltoolv0.MakeQuestionMarkList,
-			"ColumnAndType":        modeltoolv0.ColumnAndType,
-			"ColumnWithPostfix":    modeltoolv0.ColumnWithPostfix,
+			"FirstCharUpper":       modeltool.FirstCharUpper,
+			"TypeConvert":          modeltool.TypeConvert,
+			"Tags":                 modeltool.Tags,
+			"ExportColumn":         modeltool.ExportColumn,
+			"Join":                 modeltool.Join,
+			"MakeQuestionMarkList": modeltool.MakeQuestionMarkList,
+			"ColumnAndType":        modeltool.ColumnAndType,
+			"ColumnWithPostfix":    modeltool.ColumnWithPostfix,
 		}).
 		Parse(string(data)))
 
 	dbName := "dbnote"
 
-	dbhelper.GetDB("127.0.0.1", 3306, "information_schema", "root", "123456")
 	var tablaNames []string
-	err := dbhelper.DB.Select(&tablaNames,
+	err := dbhelper.SYSDB.Select(&tablaNames,
 		"SELECT table_name from tables where table_schema = '"+dbName+"'")
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for _, table := range tablaNames {
-		genModelFile(render, dbName, table)
+		genModelFile(render, dbName, "DB", table)
 	}
-
-	genModelFile(render, "information_schema", "COLUMNS")
 
 }

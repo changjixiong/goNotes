@@ -1,18 +1,16 @@
 package main
 
-import "goNotes/dbnotes/dbhelper"
-
 /*
 
 CREATE TABLE msg (
     id int(11) NOT NULL AUTO_INCREMENT,
-    sender_id int(11) NOT NULL,
-    receiver_id int(11) NOT NULL,
-    content varchar(256) NOT NULL,
+    sender_id int(11) NOT NULL COMMENT '发送者',
+    receiver_id int(11) NOT NULL COMMENT '接收者',
+    content varchar(256) NOT NULL COMMENT '内容',
     status tinyint(4) NOT NULL,
     createtime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
-  )
+  );
 
   CREATE TABLE mail (
     id int(11) NOT NULL AUTO_INCREMENT,
@@ -23,12 +21,17 @@ CREATE TABLE msg (
     status tinyint(4) NOT NULL,
     createtime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
-  )
+  );
+
+  CREATE TABLE notice (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  No int(11) NOT NULL,
+  sender_id int(11) NOT NULL COMMENT '发送者',
+  receiver_id int(11) NOT NULL COMMENT '接收者',
+  content varchar(256) NOT NULL COMMENT '内容',
+  status tinyint(4) NOT NULL,
+  createtime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id,No)
+);
 
 */
-
-func init() {
-
-	dbhelper.GetDB("127.0.0.1", 3306, "dbnote", "root", "123456")
-
-}

@@ -12,7 +12,7 @@ var Default{{$exportModelName}} = &{{$exportModelName}}{}
 func (m *{{$exportModelName}}) GetByPK({{.PkColumnsSchema | ColumnAndType}}) (*{{$exportModelName}}, bool) {
 	obj := &{{$exportModelName}}{}
 	sql := "select * from {{.BDName}}.{{.TableName}} where {{ColumnWithPostfix .PkColumns "=?" " and "}}"
-	err := dbhelper.DB.Get(obj, sql,
+	err := dbhelper.{{.DBConnection}}.Get(obj, sql,
 		{{range $K:=.PkColumns}}{{$K}},
 		{{end}}
 	)
@@ -26,7 +26,7 @@ func (m *{{$exportModelName}}) GetByPK({{.PkColumnsSchema | ColumnAndType}}) (*{
 {{end}}
 
 func (m *{{$exportModelName}}) Insert() (int64, error) {
-	return m.InsertTx(dbhelper.DB)
+	return m.InsertTx(dbhelper.{{.DBConnection}})
 }
 
 func (m *{{$exportModelName}}) InsertTx(ext sqlx.Ext) (int64, error) {
@@ -45,7 +45,7 @@ func (m *{{$exportModelName}}) InsertTx(ext sqlx.Ext) (int64, error) {
 
 {{if .HavePk}}
 func (m *{{$exportModelName}}) Delete() error {
-	return m.DeleteTx(dbhelper.DB)
+	return m.DeleteTx(dbhelper.{{.DBConnection}})
 }
 
 func (m *{{$exportModelName}}) DeleteTx(ext sqlx.Ext) error {
@@ -60,7 +60,7 @@ func (m *{{$exportModelName}}) DeleteTx(ext sqlx.Ext) error {
 
 {{if .HavePk}}
 func (m *{{$exportModelName}}) Update() error {
-	return m.UpdateTx(dbhelper.DB)
+	return m.UpdateTx(dbhelper.{{.DBConnection}})
 }
 
 func (m *{{$exportModelName}}) UpdateTx(ext sqlx.Ext) error {
@@ -89,7 +89,7 @@ func (m *{{$exportModelName}}) QueryByMap(ma map[string]interface{}) ([]*{{$expo
 		sql += fmt.Sprintf(" and %s=? ", k)
 		params = append(params, v)
 	}
-	err := dbhelper.DB.Select(&result, sql, params...)
+	err := dbhelper.{{.DBConnection}}.Select(&result, sql, params...)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err

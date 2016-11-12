@@ -1,4 +1,4 @@
-package modeltoolv0
+package modeltool
 
 import (
 	"html/template"
@@ -15,11 +15,12 @@ SELECT
         WHERE TABLE_NAME = 'mail'  and TABLE_SCHEMA = 'dbnote'
 */
 type ModelInfo struct {
-	BDName      string
-	TableName   string
-	PackageName string
-	ModelName   string
-	TableSchema *[]TABLE_SCHEMA
+	BDName       string
+	DBConnection string
+	TableName    string
+	PackageName  string
+	ModelName    string
+	TableSchema  *[]TABLE_SCHEMA
 }
 
 type TABLE_SCHEMA struct {
@@ -127,7 +128,7 @@ func TypeConvert(str string) string {
 	case "int":
 		return "int"
 
-	case "timestamp":
+	case "timestamp", "datetime":
 		return "*time.Time"
 
 	case "bigint":
