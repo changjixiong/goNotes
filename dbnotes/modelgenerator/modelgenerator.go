@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 func genModelFile(render *template.Template, dbName, tableName string) {
@@ -22,7 +23,7 @@ func genModelFile(render *template.Template, dbName, tableName string) {
 		return
 	}
 
-	fileName := "../model/" + tableName + ".go"
+	fileName := "../model/" + strings.ToLower(tableName) + ".go"
 
 	os.Remove(fileName)
 	f, err := os.Create(fileName)
@@ -78,6 +79,6 @@ func main() {
 		genModelFile(render, dbName, table)
 	}
 
-	//genModelFile(render, "information_schema", "COLUMNS")
+	genModelFile(render, "information_schema", "COLUMNS")
 
 }

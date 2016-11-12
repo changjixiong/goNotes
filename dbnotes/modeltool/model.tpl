@@ -8,7 +8,7 @@ type {{$exportModelName}} struct {
 
 var Default{{$exportModelName}} = &{{$exportModelName}}{}
 
-
+{{if .HavePk}}
 func (m *{{$exportModelName}}) GetByPK({{.PkColumnsSchema | ColumnAndType}}) (*{{$exportModelName}}, bool) {
 	obj := &{{$exportModelName}}{}
 	sql := "select * from {{.BDName}}.{{.TableName}} where {{ColumnWithPostfix .PkColumns "=?" " and "}}"
@@ -23,6 +23,7 @@ func (m *{{$exportModelName}}) GetByPK({{.PkColumnsSchema | ColumnAndType}}) (*{
 	}
 	return obj, true
 }
+{{end}}
 
 func (m *{{$exportModelName}}) Insert() (int64, error) {
 	return m.InsertTx(dbhelper.DB)
@@ -42,6 +43,7 @@ func (m *{{$exportModelName}}) InsertTx(ext sqlx.Ext) (int64, error) {
 	return affected, nil
 }
 
+{{if .HavePk}}
 func (m *{{$exportModelName}}) Delete() error {
 	return m.DeleteTx(dbhelper.DB)
 }
@@ -54,7 +56,9 @@ func (m *{{$exportModelName}}) DeleteTx(ext sqlx.Ext) error {
 	)
 	return err
 }
+{{end}}
 
+{{if .HavePk}}
 func (m *{{$exportModelName}}) Update() error {
 	return m.UpdateTx(dbhelper.DB)
 }
@@ -74,6 +78,7 @@ func (m *{{$exportModelName}}) UpdateTx(ext sqlx.Ext) error {
 
 	return nil
 }
+{{end}}
 
 func (m *{{$exportModelName}}) QueryByMap(ma map[string]interface{}) ([]*{{$exportModelName}}, error) {
 	result := []*{{$exportModelName}}{}

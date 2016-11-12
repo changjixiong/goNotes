@@ -53,6 +53,10 @@ func (m *ModelInfo) PkColumnsSchema() []TABLE_SCHEMA {
 	return result
 }
 
+func (m *ModelInfo) HavePk() bool {
+	return len(m.PkColumnsSchema()) > 0
+}
+
 func (m *ModelInfo) NoPkColumnsSchema() []TABLE_SCHEMA {
 	result := make([]TABLE_SCHEMA, 0, len(*m.TableSchema))
 	for _, t := range *m.TableSchema {
