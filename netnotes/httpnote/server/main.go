@@ -18,6 +18,12 @@ func (s *Ser) foo(w http.ResponseWriter, req *http.Request) {
 
 }
 
+func (s *Ser) index(w http.ResponseWriter, req *http.Request) {
+
+	fmt.Fprintf(w, "")
+
+}
+
 func (s *Ser) bar(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, strings.Repeat("bar", 100))
 }
@@ -49,9 +55,9 @@ func MakeGzipHandler(fn http.HandlerFunc) http.HandlerFunc {
 func main() {
 
 	s := Ser{}
-
+	http.HandleFunc("/", http.HandlerFunc(s.index))
 	http.HandleFunc("/foo", http.HandlerFunc(s.foo))
 	http.HandleFunc("/bar", MakeGzipHandler(s.bar))
 
-	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+	log.Fatal(http.ListenAndServe("localhost:8080", nil))
 }
