@@ -16,8 +16,8 @@ type Record struct {
 
 func FillStruct(structPtr interface{}, data []string) error {
 	v := reflect.ValueOf(structPtr)
-	t := reflect.TypeOf(structPtr)
-	if reflect.Ptr != t.Kind() {
+	//t := reflect.TypeOf(structPtr)
+	if reflect.Ptr != v.Type().Kind() {
 		return errors.New("must pass a pointer")
 	}
 
@@ -25,8 +25,9 @@ func FillStruct(structPtr interface{}, data []string) error {
 		return errors.New("nil pointer passed to StructScan destination")
 	}
 
-	baseBataType := t.Elem()
+	// baseBataType := t.Elem()
 	structValue := v.Elem()
+	baseBataType := structValue.Type()
 
 	if len(data) != baseBataType.NumField() {
 		return errors.New("field count mismatch")
