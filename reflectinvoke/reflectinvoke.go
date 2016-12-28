@@ -31,6 +31,23 @@ type Response struct {
 }
 
 var methodStruct MethodMap = MethodMap{make(map[string]*MethodInfo)}
+var errorInfo map[int]string = make(map[int]string)
+
+const (
+	errorCode_JsonError = 1 + iota
+	errorCode_MethodNotFound
+	errorCode_ParameterNotMatch
+)
+
+func init() {
+	errorInfo[errorCode_JsonError] = "JsonError"
+	errorInfo[errorCode_MethodNotFound] = "MethodNotFound"
+	errorInfo[errorCode_ParameterNotMatch] = "ParameterNotMatch"
+}
+
+func ErrorMsg(errorCode int) string {
+	return errorInfo[errorCode]
+}
 
 func RegisterMethod(v interface{}) {
 
@@ -155,16 +172,25 @@ func InvokeByJson(byteData []byte) []byte {
 	resultData := &Response{}
 
 	if err != nil {
-		resultData.ErrorCode = 1
+		resultData.ErrorCode = errorCode_JsonError
 	} else {
-		methodInfo := methodStruct.Methods[req.FuncName]
-		paramsValue, err := convertParam(methodInfo, req.Params)
+		resultData.FuncName = req.FuncName
 
-		if err != nil {
-			resultData.FuncName = req.FuncName
-			resultData.ErrorCode = 2
+		methodInfo, found := methodStruct.Methods[req.FuncName]
+
+		if found {
+
+			paramsValue, err := convertParam(methodInfo, req.Params)
+
+			if err != nil {
+
+				resultData.ErrorCode = errorCode_ParameterNotMatch
+			} else {
+				resultData = InvokeByValues(methodInfo, paramsValue)
+			}
+
 		} else {
-			resultData = InvokeByValues(methodInfo, paramsValue)
+			resultData.ErrorCode = errorCode_MethodNotFound
 		}
 
 	}
