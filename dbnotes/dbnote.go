@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 
+	"goNotes/dbnotes/dbhelper"
 	"goNotes/dbnotes/model"
 )
 
 func main() {
+
+	dbhelper.Init("127.0.0.1", 3306, "dbnote", "root", "123456")
 
 	notices, _ := model.DefaultNotice.QueryByMap(map[string]interface{}{"1": "1"})
 

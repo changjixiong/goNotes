@@ -104,9 +104,13 @@ func ExportColumn(columnName string) string {
 	columnItems := strings.Split(columnName, "_")
 	columnItems[0] = FirstCharUpper(columnItems[0])
 	for i := 0; i < len(columnItems); i++ {
-		if strings.ToUpper(columnItems[i]) == "ID" {
-			columnItems[i] = "ID"
+		item := strings.Title(columnItems[i])
+
+		if strings.ToUpper(item) == "ID" {
+			item = "ID"
 		}
+
+		columnItems[i] = item
 	}
 
 	return strings.Join(columnItems, "")

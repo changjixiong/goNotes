@@ -10,7 +10,8 @@ import (
 const driverName = "mysql"
 
 var DB *sqlx.DB
-var SYSDB *sqlx.DB
+
+// var SYSDB *sqlx.DB
 
 const (
 	default_db_max_open    = 32
@@ -35,8 +36,8 @@ func initSqlxDB(dbDSN string, maxOpen, maxIdle int) *sqlx.DB {
 	return db
 }
 
-func init() {
+func Init(ip string, port int, dbName, userName, pwd string) {
 
-	DB = GetDB("127.0.0.1", 3306, "dbnote", "root", "123456")
-	SYSDB = GetDB("127.0.0.1", 3306, "information_schema", "root", "123456")
+	DB = GetDB(ip, port, dbName, userName, pwd)
+	// SYSDB = GetDB("127.0.0.1", 3306, "information_schema", "root", "123456")
 }
