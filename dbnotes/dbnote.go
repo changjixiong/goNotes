@@ -14,15 +14,17 @@ func main() {
 	notices, _ := model.DefaultNotice.QueryByMap(map[string]interface{}{"1": "1"})
 
 	if len(notices) > 0 {
-		notices[0].Content = "update"
+		notices[0].Content = notices[0].Content + "update"
 		notices[0].Update()
 	} else {
+		emoji := string([]byte{240, 159, 152, 143})
 		(&model.Notice{
 			No:         0,
 			SenderID:   123,
 			ReceiverID: 234,
-			Content:    "new",
-			Status:     0}).Insert()
+			// Content:    "new",
+			Content: emoji,
+			Status:  0}).Insert()
 	}
 
 	msgs, _ := model.DefaultMsg.QueryByMap(map[string]interface{}{"content": "def"})

@@ -21,7 +21,7 @@ const (
 
 func GetDSN(ip string, port int, dbName, userName, pwd string) string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s",
-		userName, pwd, ip, port, dbName, "parseTime=true")
+		userName, pwd, ip, port, dbName, "parseTime=true&charset=utf8mb4")
 }
 
 func GetDB(ip string, port int, dbName, userName, pwd string) *sqlx.DB {
