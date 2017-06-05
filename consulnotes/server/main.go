@@ -29,7 +29,7 @@ func registerServer() {
 	checkPort := 8080
 
 	registration := new(consulapi.AgentServiceRegistration)
-	registration.ID = "serverNode_2"
+	registration.ID = "serverNode_1"
 	registration.Name = "serverNode"
 	registration.Port = 9527
 	registration.Tags = []string{"serverNode"}
