@@ -30,7 +30,11 @@ type Response struct {
 	ErrorCode int           `json:"errorcode"`
 }
 
-var methodStruct MethodMap = MethodMap{make(map[string]*MethodInfo)}
+type Reflectinvoker struct {
+	Methods map[string]*MethodInfo
+}
+
+// var methodStruct MethodMap = MethodMap{make(map[string]*MethodInfo)}
 var errorInfo map[int]string = make(map[int]string)
 
 const (
@@ -49,8 +53,13 @@ func ErrorMsg(errorCode int) string {
 	return errorInfo[errorCode]
 }
 
-func RegisterMethod(v interface{}) {
+func NewReflectinvoker() *Reflectinvoker {
+	return &Reflectinvoker{
+		Methods: make(map[string]*MethodInfo),
+	}
+}
 
+func (r *Reflectinvoker) RegisterMethod(v interface{}) {
 	reflectType := reflect.TypeOf(v)
 	host := reflect.ValueOf(v)
 
@@ -63,9 +72,80 @@ func RegisterMethod(v interface{}) {
 			continue
 		}
 
-		methodStruct.Methods[m.Name] = &MethodInfo{Method: m, Host: host, Idx: i}
+		r.Methods[m.Name] = &MethodInfo{Method: m, Host: host, Idx: i}
 	}
+
 }
+
+func (r *Reflectinvoker) InvokeByReflectArgs(funcName string, par []reflect.Value) []reflect.Value {
+
+	return r.Methods[funcName].Host.MethodByName(funcName).Call(par)
+}
+
+func (r *Reflectinvoker) InvokeByInterfaceArgs(funcName string, Params []interface{}) []reflect.Value {
+
+	paramsValue, err := convertParam(r.Methods[funcName], Params)
+
+	if err != nil {
+		return nil
+	}
+
+	return r.Methods[funcName].Host.MethodByName(funcName).Call(paramsValue)
+}
+
+func (r *Reflectinvoker) InvokeByJson(byteData []byte) []byte {
+
+	req := &Request{}
+	err := json.Unmarshal(byteData, req)
+
+	resultData := &Response{}
+
+	if err != nil {
+		resultData.ErrorCode = errorCode_JsonError
+	} else {
+		resultData.FuncName = req.FuncName
+
+		methodInfo, found := r.Methods[req.FuncName]
+
+		if found {
+
+			paramsValue, err := convertParam(methodInfo, req.Params)
+
+			if err != nil {
+
+				resultData.ErrorCode = errorCode_ParameterNotMatch
+			} else {
+				resultData = InvokeByValues(methodInfo, paramsValue)
+			}
+
+		} else {
+			resultData.ErrorCode = errorCode_MethodNotFound
+		}
+
+	}
+
+	data, _ := json.Marshal(resultData)
+
+	return data
+}
+
+// func RegisterMethod(v interface{}) {
+
+// 	reflectType := reflect.TypeOf(v)
+// 	host := reflect.ValueOf(v)
+
+// 	for i := 0; i < reflectType.NumMethod(); i++ {
+// 		m := reflectType.Method(i)
+
+// 		char, _ := utf8.DecodeRuneInString(m.Name)
+// 		//非导出函数不注册
+// 		if !unicode.IsUpper(char) {
+// 			continue
+// 		}
+
+// 		methodStruct.Methods[m.Name] = &MethodInfo{Method: m, Host: host, Idx: i}
+// 	}
+// }
 
 func convertParamType(v interface{}, targetType reflect.Type) (
 	targetValue reflect.Value, ok bool) {
@@ -136,21 +216,21 @@ func convertParam(methodInfo *MethodInfo, Params []interface{}) ([]reflect.Value
 	return paramsValue, nil
 }
 
-func InvokeByReflectArgs(funcName string, par []reflect.Value) []reflect.Value {
+// func InvokeByReflectArgs(funcName string, par []reflect.Value) []reflect.Value {
 
-	return methodStruct.Methods[funcName].Host.MethodByName(funcName).Call(par)
-}
+// 	return methodStruct.Methods[funcName].Host.MethodByName(funcName).Call(par)
+// }
 
-func InvokeByInterfaceArgs(funcName string, Params []interface{}) []reflect.Value {
+// func InvokeByInterfaceArgs(funcName string, Params []interface{}) []reflect.Value {
 
-	paramsValue, err := convertParam(methodStruct.Methods[funcName], Params)
+// 	paramsValue, err := convertParam(methodStruct.Methods[funcName], Params)
 
-	if err != nil {
-		return nil
-	}
+// 	if err != nil {
+// 		return nil
+// 	}
 
-	return methodStruct.Methods[funcName].Host.MethodByName(funcName).Call(paramsValue)
-}
+// 	return methodStruct.Methods[funcName].Host.MethodByName(funcName).Call(paramsValue)
+// }
 
 func InvokeByValues(methodInfo *MethodInfo, params []reflect.Value) *Response {
 
@@ -164,38 +244,38 @@ func InvokeByValues(methodInfo *MethodInfo, params []reflect.Value) *Response {
 	return data
 }
 
-func InvokeByJson(byteData []byte) []byte {
+// func InvokeByJson(byteData []byte) []byte {
 
-	req := &Request{}
-	err := json.Unmarshal(byteData, req)
+// 	req := &Request{}
+// 	err := json.Unmarshal(byteData, req)
 
-	resultData := &Response{}
+// 	resultData := &Response{}
 
-	if err != nil {
-		resultData.ErrorCode = errorCode_JsonError
-	} else {
-		resultData.FuncName = req.FuncName
+// 	if err != nil {
+// 		resultData.ErrorCode = errorCode_JsonError
+// 	} else {
+// 		resultData.FuncName = req.FuncName
 
-		methodInfo, found := methodStruct.Methods[req.FuncName]
+// 		methodInfo, found := methodStruct.Methods[req.FuncName]
 
-		if found {
+// 		if found {
 
-			paramsValue, err := convertParam(methodInfo, req.Params)
+// 			paramsValue, err := convertParam(methodInfo, req.Params)
 
-			if err != nil {
+// 			if err != nil {
 
-				resultData.ErrorCode = errorCode_ParameterNotMatch
-			} else {
-				resultData = InvokeByValues(methodInfo, paramsValue)
-			}
+// 				resultData.ErrorCode = errorCode_ParameterNotMatch
+// 			} else {
+// 				resultData = InvokeByValues(methodInfo, paramsValue)
+// 			}
 
-		} else {
-			resultData.ErrorCode = errorCode_MethodNotFound
-		}
+// 		} else {
+// 			resultData.ErrorCode = errorCode_MethodNotFound
+// 		}
 
-	}
+// 	}
 
-	data, _ := json.Marshal(resultData)
+// 	data, _ := json.Marshal(resultData)
 
-	return data
-}
+// 	return data
+// }

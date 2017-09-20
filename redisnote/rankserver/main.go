@@ -16,6 +16,8 @@ import (
 
 const RECV_BUF_LEN = 1024
 
+var reflectinvoker *reflectinvoke.Reflectinvoker
+
 func consulCheck(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "consulCheck")
 }
@@ -65,7 +67,7 @@ func RankServer(conn net.Conn) {
 		case nil:
 			log.Println("get:", string(buf[0:n]))
 
-			resultdata := reflectinvoke.InvokeByJson([]byte(buf[0:n]))
+			resultdata := reflectinvoker.InvokeByJson([]byte(buf[0:n]))
 			conn.Write(resultdata)
 		case io.EOF:
 			log.Printf("Warning: End of data: %s\n", err)
@@ -78,7 +80,7 @@ func RankServer(conn net.Conn) {
 }
 
 func main() {
-
+	reflectinvoker = reflectinvoke.NewReflectinvoker()
 	rdsClient := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", "127.0.0.1", 6379),
 		Password: "123456",
@@ -100,7 +102,7 @@ func main() {
 	}
 
 	// 用json字符串调用
-	reflectinvoke.RegisterMethod(rankservice.DefaultRankService)
+	reflectinvoker.RegisterMethod(rankservice.DefaultRankService)
 
 	go registerServer()
 

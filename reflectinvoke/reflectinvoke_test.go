@@ -10,6 +10,8 @@ import (
 	"testing"
 )
 
+var reflectinvoker *reflectinvoke.Reflectinvoker
+
 type Foo struct {
 }
 
@@ -63,18 +65,19 @@ func init() {
 	foo := &Foo{}
 	bar := &Bar{}
 
-	reflectinvoke.RegisterMethod(foo)
-	reflectinvoke.RegisterMethod(bar)
+	reflectinvoker = reflectinvoke.NewReflectinvoker()
+	reflectinvoker.RegisterMethod(foo)
+	reflectinvoker.RegisterMethod(bar)
 }
 
 func TestInvoke(t *testing.T) {
 
-	resultFooFuncZero := reflectinvoke.InvokeByReflectArgs("FooFuncZero", nil)
+	resultFooFuncZero := reflectinvoker.InvokeByReflectArgs("FooFuncZero", nil)
 	if false == resultFooFuncZero[0].Bool() {
 		t.Errorf("invoke FooFuncZero error")
 	}
 
-	resultFooFuncOne := reflectinvoke.InvokeByReflectArgs("FooFuncOne",
+	resultFooFuncOne := reflectinvoker.InvokeByReflectArgs("FooFuncOne",
 		[]reflect.Value{reflect.ValueOf(123)})
 
 	if "123" != resultFooFuncOne[0].String() {
@@ -82,18 +85,18 @@ func TestInvoke(t *testing.T) {
 	}
 
 	argForFooFuncTwo := []reflect.Value{reflect.ValueOf("str123"), reflect.ValueOf(456)}
-	resultFooFuncTwo := reflectinvoke.InvokeByReflectArgs("FooFuncTwo", argForFooFuncTwo)
+	resultFooFuncTwo := reflectinvoker.InvokeByReflectArgs("FooFuncTwo", argForFooFuncTwo)
 
 	if "str123456" != resultFooFuncTwo[0].String() {
 		t.Errorf("invoke FooFuncTwo error")
 	}
 
-	resultBarFuncZero := reflectinvoke.InvokeByReflectArgs("BarFuncZero", nil)
+	resultBarFuncZero := reflectinvoker.InvokeByReflectArgs("BarFuncZero", nil)
 	if "BarFuncZero" == resultBarFuncZero[0].String() {
 		t.Errorf("invoke BarFuncZero error")
 	}
 
-	resultBarFuncOne := reflectinvoke.InvokeByReflectArgs("BarFuncOne",
+	resultBarFuncOne := reflectinvoker.InvokeByReflectArgs("BarFuncOne",
 		[]reflect.Value{reflect.ValueOf(123.0)})
 
 	if 123 != resultBarFuncOne[0].Int() {
@@ -101,7 +104,7 @@ func TestInvoke(t *testing.T) {
 	}
 
 	argForBarFuncTwo := []reflect.Value{reflect.ValueOf(false), reflect.ValueOf(456)}
-	resultBarFuncTwo := reflectinvoke.InvokeByReflectArgs("BarFuncTwo", argForBarFuncTwo)
+	resultBarFuncTwo := reflectinvoker.InvokeByReflectArgs("BarFuncTwo", argForBarFuncTwo)
 
 	if -456 != resultBarFuncTwo[0].Int() {
 		t.Errorf("invoke BarFuncTwo error")
@@ -110,35 +113,35 @@ func TestInvoke(t *testing.T) {
 }
 
 func TestInvokeByInterfaceArgs(t *testing.T) {
-	resultFooFuncZero := reflectinvoke.InvokeByInterfaceArgs("FooFuncZero", nil)
+	resultFooFuncZero := reflectinvoker.InvokeByInterfaceArgs("FooFuncZero", nil)
 	if false == resultFooFuncZero[0].Bool() {
 		t.Errorf("invoke FooFuncZero error")
 	}
 
-	resultFooFuncOne := reflectinvoke.InvokeByInterfaceArgs("FooFuncOne", []interface{}{123})
+	resultFooFuncOne := reflectinvoker.InvokeByInterfaceArgs("FooFuncOne", []interface{}{123})
 
 	if "123" != resultFooFuncOne[0].String() {
 		t.Errorf("invoke FooFuncOne error")
 	}
 
-	resultFooFuncTwo := reflectinvoke.InvokeByInterfaceArgs("FooFuncTwo",
+	resultFooFuncTwo := reflectinvoker.InvokeByInterfaceArgs("FooFuncTwo",
 		[]interface{}{"str123", 456})
 
 	if "str123456" != resultFooFuncTwo[0].String() {
 		t.Errorf("invoke FooFuncTwo error")
 	}
 
-	resultBarFuncZero := reflectinvoke.InvokeByInterfaceArgs("BarFuncZero", nil)
+	resultBarFuncZero := reflectinvoker.InvokeByInterfaceArgs("BarFuncZero", nil)
 	if "BarFuncZero" == resultBarFuncZero[0].String() {
 		t.Errorf("invoke BarFuncZero error")
 	}
 
-	resultBarFuncOne := reflectinvoke.InvokeByInterfaceArgs("BarFuncOne", []interface{}{123.1})
+	resultBarFuncOne := reflectinvoker.InvokeByInterfaceArgs("BarFuncOne", []interface{}{123.1})
 	if 123 != resultBarFuncOne[0].Int() {
 		t.Errorf("invoke BarFuncOne error")
 	}
 
-	resultBarFuncTwo := reflectinvoke.InvokeByInterfaceArgs("BarFuncTwo",
+	resultBarFuncTwo := reflectinvoker.InvokeByInterfaceArgs("BarFuncTwo",
 		[]interface{}{false, 456})
 
 	if -456 != resultBarFuncTwo[0].Int() {
@@ -149,7 +152,7 @@ func TestInvokeByInterfaceArgs(t *testing.T) {
 func testInvokeByJson(jsonStr, funcName string, expectResult ...interface{}) error {
 
 	result := reflectinvoke.Response{}
-	err := json.Unmarshal(reflectinvoke.InvokeByJson([]byte(jsonStr)), &result)
+	err := json.Unmarshal(reflectinvoker.InvokeByJson([]byte(jsonStr)), &result)
 	if err != nil {
 		return err
 	}

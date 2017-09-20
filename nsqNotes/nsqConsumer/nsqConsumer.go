@@ -14,6 +14,8 @@ import (
 	nsq "github.com/nsqio/go-nsq"
 )
 
+var reflectinvoker *reflectinvoke.Reflectinvoker
+
 type Foo struct {
 }
 
@@ -32,7 +34,7 @@ func (f *Foo) FooFuncSwap(argOne, argTwo string) (string, string) {
 
 func HandleJsonMessage(message *nsq.Message) error {
 
-	resultJson := reflectinvoke.InvokeByJson([]byte(message.Body))
+	resultJson := reflectinvoker.InvokeByJson([]byte(message.Body))
 	result := reflectinvoke.Response{}
 	err := json.Unmarshal(resultJson, &result)
 	if err != nil {
@@ -76,8 +78,9 @@ func init() {
 	foo := &Foo{}
 	bar := &Bar{}
 
-	reflectinvoke.RegisterMethod(foo)
-	reflectinvoke.RegisterMethod(bar)
+	reflectinvoker = reflectinvoke.NewReflectinvoker()
+	reflectinvoker.RegisterMethod(foo)
+	reflectinvoker.RegisterMethod(bar)
 }
 
 func main() {
