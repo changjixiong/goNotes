@@ -22,7 +22,7 @@ var DefaultMail = &Mail{}
 
 func (m *Mail) GetByPK(id int) (*Mail, bool) {
 	obj := &Mail{}
-	sql := "select * from dbnote.mail where id=?"
+	sql := "select * from mail where id=?"
 	err := dbhelper.DB.Get(obj, sql,
 		id,
 	)
@@ -39,7 +39,7 @@ func (m *Mail) Insert() (int64, error) {
 }
 
 func (m *Mail) InsertTx(ext sqlx.Ext) (int64, error) {
-	sql := "insert into dbnote.mail(id,sender_id,receiver_id,title,content,status,createtime) values(?,?,?,?,?,?,?)"
+	sql := "insert into mail(id,sender_id,receiver_id,title,content,status,createtime) values(?,?,?,?,?,?,?)"
 	result, err := ext.Exec(sql,
 		m.ID,
 		m.SenderID,
@@ -62,7 +62,7 @@ func (m *Mail) Delete() error {
 }
 
 func (m *Mail) DeleteTx(ext sqlx.Ext) error {
-	sql := `delete from dbnote.mail where id=?`
+	sql := `delete from mail where id=?`
 	_, err := ext.Exec(sql,
 		m.ID,
 	)
@@ -74,7 +74,7 @@ func (m *Mail) Update() error {
 }
 
 func (m *Mail) UpdateTx(ext sqlx.Ext) error {
-	sql := `update dbnote.mail set sender_id=?,receiver_id=?,title=?,content=?,status=?,createtime=? where id=?`
+	sql := `update mail set sender_id=?,receiver_id=?,title=?,content=?,status=?,createtime=? where id=?`
 	_, err := ext.Exec(sql,
 		m.SenderID,
 		m.ReceiverID,
@@ -97,7 +97,7 @@ func (m *Mail) QueryByMap(ma map[string]interface{}) ([]*Mail, error) {
 	result := []*Mail{}
 	var params []interface{}
 
-	sql := "select * from dbnote.mail where 1=1 "
+	sql := "select * from mail where 1=1 "
 	for k, v := range ma {
 		sql += fmt.Sprintf(" and %s=? ", k)
 		params = append(params, v)

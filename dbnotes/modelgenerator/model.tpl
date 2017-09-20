@@ -11,7 +11,7 @@ var Default{{$exportModelName}} = &{{$exportModelName}}{}
 {{if .HavePk}}
 func (m *{{$exportModelName}}) GetByPK({{.PkColumnsSchema | ColumnAndType}}) (*{{$exportModelName}}, bool) {
 	obj := &{{$exportModelName}}{}
-	sql := "select * from {{.BDName}}.{{.TableName}} where {{ColumnWithPostfix .PkColumns "=?" " and "}}"
+	sql := "select * from {{.TableName}} where {{ColumnWithPostfix .PkColumns "=?" " and "}}"
 	err := {{.DBConnection}}.Get(obj, sql,
 		{{range $K:=.PkColumns}}{{$K}},
 		{{end}}
@@ -30,7 +30,7 @@ func (m *{{$exportModelName}}) Insert() (int64, error) {
 }
 
 func (m *{{$exportModelName}}) InsertTx(ext sqlx.Ext) (int64, error) {
-	sql := "insert into {{.BDName}}.{{.TableName}}({{Join .ColumnNames ","}}) values({{.ColumnCount | MakeQuestionMarkList}})"
+	sql := "insert into {{.TableName}}({{Join .ColumnNames ","}}) values({{.ColumnCount | MakeQuestionMarkList}})"
 	result, err := ext.Exec(sql,
 		{{range .TableSchema}}m.{{.COLUMN_NAME | ExportColumn}},
 		{{end}}
@@ -49,7 +49,7 @@ func (m *{{$exportModelName}}) Delete() error {
 }
 
 func (m *{{$exportModelName}}) DeleteTx(ext sqlx.Ext) error {
-	sql := `delete from {{.BDName}}.{{.TableName}} where {{ColumnWithPostfix .PkColumns "=?" " and "}}`
+	sql := `delete from {{.TableName}} where {{ColumnWithPostfix .PkColumns "=?" " and "}}`
 	_, err := ext.Exec(sql,
 		{{range .PkColumns}}m.{{. | ExportColumn}},
 		{{end}}
@@ -64,7 +64,7 @@ func (m *{{$exportModelName}}) Update() error {
 }
 
 func (m *{{$exportModelName}}) UpdateTx(ext sqlx.Ext) error {
-	sql := `update {{.BDName}}.{{.TableName}} set {{ColumnWithPostfix .NoPkColumns "=?" ","}} where {{ColumnWithPostfix .PkColumns "=?" " and "}}`
+	sql := `update {{.TableName}} set {{ColumnWithPostfix .NoPkColumns "=?" ","}} where {{ColumnWithPostfix .PkColumns "=?" " and "}}`
 	_, err := ext.Exec(sql,
 		{{range .NoPkColumns}}m.{{. | ExportColumn}},
 		{{end}}{{range .PkColumns}}m.{{. | ExportColumn}},
@@ -84,7 +84,7 @@ func (m *{{$exportModelName}}) QueryByMap(ma map[string]interface{}) ([]*{{$expo
 	result := []*{{$exportModelName}}{}
 	var params []interface{}
 
-	sql := "select * from {{.BDName}}.{{.TableName}} where 1=1 "
+	sql := "select * from {{.TableName}} where 1=1 "
 	for k, v := range ma {
 		sql += fmt.Sprintf(" and %s=? ", k)
 		params = append(params, v)

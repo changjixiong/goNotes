@@ -22,7 +22,7 @@ var DefaultNotice = &Notice{}
 
 func (m *Notice) GetByPK(id int, No int) (*Notice, bool) {
 	obj := &Notice{}
-	sql := "select * from dbnote.notice where id=? and No=?"
+	sql := "select * from notice where id=? and No=?"
 	err := dbhelper.DB.Get(obj, sql,
 		id,
 		No,
@@ -40,7 +40,7 @@ func (m *Notice) Insert() (int64, error) {
 }
 
 func (m *Notice) InsertTx(ext sqlx.Ext) (int64, error) {
-	sql := "insert into dbnote.notice(id,No,sender_id,receiver_id,content,status,createtime) values(?,?,?,?,?,?,?)"
+	sql := "insert into notice(id,No,sender_id,receiver_id,content,status,createtime) values(?,?,?,?,?,?,?)"
 	result, err := ext.Exec(sql,
 		m.ID,
 		m.No,
@@ -63,7 +63,7 @@ func (m *Notice) Delete() error {
 }
 
 func (m *Notice) DeleteTx(ext sqlx.Ext) error {
-	sql := `delete from dbnote.notice where id=? and No=?`
+	sql := `delete from notice where id=? and No=?`
 	_, err := ext.Exec(sql,
 		m.ID,
 		m.No,
@@ -76,7 +76,7 @@ func (m *Notice) Update() error {
 }
 
 func (m *Notice) UpdateTx(ext sqlx.Ext) error {
-	sql := `update dbnote.notice set sender_id=?,receiver_id=?,content=?,status=?,createtime=? where id=? and No=?`
+	sql := `update notice set sender_id=?,receiver_id=?,content=?,status=?,createtime=? where id=? and No=?`
 	_, err := ext.Exec(sql,
 		m.SenderID,
 		m.ReceiverID,
@@ -99,7 +99,7 @@ func (m *Notice) QueryByMap(ma map[string]interface{}) ([]*Notice, error) {
 	result := []*Notice{}
 	var params []interface{}
 
-	sql := "select * from dbnote.notice where 1=1 "
+	sql := "select * from notice where 1=1 "
 	for k, v := range ma {
 		sql += fmt.Sprintf(" and %s=? ", k)
 		params = append(params, v)

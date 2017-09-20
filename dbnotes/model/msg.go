@@ -21,7 +21,7 @@ var DefaultMsg = &Msg{}
 
 func (m *Msg) GetByPK(id int) (*Msg, bool) {
 	obj := &Msg{}
-	sql := "select * from dbnote.msg where id=?"
+	sql := "select * from msg where id=?"
 	err := dbhelper.DB.Get(obj, sql,
 		id,
 	)
@@ -38,7 +38,7 @@ func (m *Msg) Insert() (int64, error) {
 }
 
 func (m *Msg) InsertTx(ext sqlx.Ext) (int64, error) {
-	sql := "insert into dbnote.msg(id,sender_id,receiver_id,content,status,createtime) values(?,?,?,?,?,?)"
+	sql := "insert into msg(id,sender_id,receiver_id,content,status,createtime) values(?,?,?,?,?,?)"
 	result, err := ext.Exec(sql,
 		m.ID,
 		m.SenderID,
@@ -60,7 +60,7 @@ func (m *Msg) Delete() error {
 }
 
 func (m *Msg) DeleteTx(ext sqlx.Ext) error {
-	sql := `delete from dbnote.msg where id=?`
+	sql := `delete from msg where id=?`
 	_, err := ext.Exec(sql,
 		m.ID,
 	)
@@ -72,7 +72,7 @@ func (m *Msg) Update() error {
 }
 
 func (m *Msg) UpdateTx(ext sqlx.Ext) error {
-	sql := `update dbnote.msg set sender_id=?,receiver_id=?,content=?,status=?,createtime=? where id=?`
+	sql := `update msg set sender_id=?,receiver_id=?,content=?,status=?,createtime=? where id=?`
 	_, err := ext.Exec(sql,
 		m.SenderID,
 		m.ReceiverID,
@@ -94,7 +94,7 @@ func (m *Msg) QueryByMap(ma map[string]interface{}) ([]*Msg, error) {
 	result := []*Msg{}
 	var params []interface{}
 
-	sql := "select * from dbnote.msg where 1=1 "
+	sql := "select * from msg where 1=1 "
 	for k, v := range ma {
 		sql += fmt.Sprintf(" and %s=? ", k)
 		params = append(params, v)

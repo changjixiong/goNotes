@@ -19,7 +19,6 @@ func main() {
 	} else {
 		emoji := string([]byte{240, 159, 152, 143})
 		(&model.Notice{
-			No:         0,
 			SenderID:   123,
 			ReceiverID: 234,
 			// Content:    "new",
