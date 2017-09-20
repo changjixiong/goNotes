@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">  
+<html xmlns="http://www.w3.org/1999/xhtml">  
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+    
+</head>
+<body>
+    
+    <input id="btn1" type="button" value="登录">
+    <input id="btn2" type="button" value="登出">
+    <input id="btn3" type="button" value="api调用">
+
+ 
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script>
+    $(function () {
+        var Domain="http://127.0.0.1:9876";
+        congUrl={
+            urlLogin:Domain+"/login",
+            urlLogout:Domain+"/logout",
+            urlAPI:Domain+"/api"
+        };
+
+        $("#btn1").click(function () {
+            $.ajax({
+                type:"POST",
+                url:congUrl.urlLogin,
+                dataType:"json",
+                data:JSON.stringify({
+	                                    "username":"user2",
+	                                    "userpwd":"222222"
+                                    }),
+                xhrFields: {
+                    withCredentials: true
+                },
+               
+                success:function () {
+
+                }
+            })
+        })
+       
+
+        $("#btn2").click(function () {
+            $.ajax({
+                type:"POST",
+                url:congUrl.urlLogout,
+                dataType:"json",
+                data:JSON.stringify(),
+                xhrFields: {
+                    withCredentials: true
+                },
+                
+                success:function () {
+
+                }
+            })
+        })
+
+
+        $("#btn3").click(function () {
+            $.ajax({
+                type:"POST",
+                url:congUrl.urlAPI,
+                dataType:"json",
+                data:JSON.stringify({}),
+                xhrFields: {
+                    withCredentials: true
+                },
+                
+                success:function () {
+
+                }
+            })
+        })
+
+    })
+</script> 
+</body>
+</html>
