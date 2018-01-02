@@ -9,13 +9,13 @@ import (
 )
 
 type Mail struct {
-	ID         int        `db:"id" json:"id"`                   //
-	SenderID   int        `db:"sender_id" json:"sender_id"`     //
-	ReceiverID int        `db:"receiver_id" json:"receiver_id"` //
-	Title      string     `db:"title" json:"title"`             //
-	Content    string     `db:"content" json:"content"`         //
-	Status     int8       `db:"status" json:"status"`           //
-	Createtime *time.Time `db:"createtime" json:"createtime"`   //
+	ID         int       `db:"id" json:"id"`                   //
+	SenderID   int       `db:"sender_id" json:"sender_id"`     //
+	ReceiverID int       `db:"receiver_id" json:"receiver_id"` //
+	Title      string    `db:"title" json:"title"`             //
+	Content    string    `db:"content" json:"content"`         //
+	Status     int8      `db:"status" json:"status"`           //
+	Createtime time.Time `db:"createtime" json:"createtime"`   //
 }
 
 var DefaultMail = &Mail{}

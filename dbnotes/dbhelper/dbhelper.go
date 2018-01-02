@@ -65,7 +65,14 @@ func InitCassDB(host []string, port int, keyspace, consistencyOption, userName, 
 	}
 
 	log.Println("initCassDB finish")
-	return session
+	DBCassandra = session
+	return DBCassandra
+}
+
+func CloseCassDB() {
+	if nil != DBCassandra && !DBCassandra.Closed() {
+		DBCassandra.Close()
+	}
 }
 
 func Init(ip string, port int, dbName, userName, pwd string) {

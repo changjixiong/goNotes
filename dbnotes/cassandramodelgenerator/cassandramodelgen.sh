@@ -5,11 +5,12 @@ go run cassandramodelgen.go \
 -tplFile='./cassandramodel.tpl' \
 -modelFolder='../modelcassandra/' \
 -packageName='cassandra' \
--dbIP='192.168.199.157'  \
+-dbIP='127.0.0.1'  \
 -dbConnection='dbhelper.DBCassandra' \
--dbName='contra_stats_s999_2' \
+-dbName='space_for_back' \
+-dbPort=9042 \
 -userName='test' \
 -pwd='123456' \
--genTable='player_hero_use_log' \
+-genTable='num_log_10ms#num_log_100ms#num_log_2s#num_log_4s' \
 
 echo 'done'

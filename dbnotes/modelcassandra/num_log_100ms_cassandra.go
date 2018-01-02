@@ -8,31 +8,31 @@ import (
 	"github.com/gocql/gocql"
 )
 
-type Msg struct {
-	Content    string     `db:"content" json:"content"`         //
+type NumLog100ms struct {
 	CreateTime time.Time  `db:"create_time" json:"create_time"` //
 	ID         gocql.UUID `db:"id" json:"id"`                   //
+	Num        int        `db:"num" json:"num"`                 //
+	ServerID   int        `db:"server_id" json:"server_id"`     //
 }
 
-type msgOp struct{}
+type numLog100msOp struct{}
 
-var MsgOp = &msgOp{}
-var DefaultMsg = &Msg{}
+var NumLog100msOp = &numLog100msOp{}
+var DefaultNumLog100ms = &NumLog100ms{}
 
-func (op *msgOp) Insert(m *Msg) (int64, error) {
-
+func (op *numLog100msOp) Insert(m *NumLog100ms) (int64, error) {
 	return op.InsertTx(dbhelper.DBCassandra, m)
 }
 
-func (op *msgOp) InsertTx(session *gocql.Session, m *Msg) (int64, error) {
-	sql := "insert into msg(content,create_time,id) values(?,?,?)"
+func (op *numLog100msOp) InsertTx(session *gocql.Session, m *NumLog100ms) (int64, error) {
+	sql := "insert into num_log_100ms(create_time,id,num,server_id) values(?,?,?,?)"
 	if err := session.Query(
 		sql,
-		m.Content,
 		m.CreateTime,
 		gocql.TimeUUID(),
+		m.Num,
+		m.ServerID,
 	).Exec(); err != nil {
-		fmt.Println("InsertTx", err)
 		return -1, err
 
 	}
@@ -40,11 +40,11 @@ func (op *msgOp) InsertTx(session *gocql.Session, m *Msg) (int64, error) {
 	return 0, nil
 }
 
-func (op *msgOp) QueryByMap(m map[string]interface{}, options []string) ([]*Msg, error) {
-	result := []*Msg{}
+func (op *numLog100msOp) QueryByMap(m map[string]interface{}, options []string) ([]*NumLog100ms, error) {
+	result := []*NumLog100ms{}
 	var params []interface{}
 
-	sql := "select content,create_time,id from msg"
+	sql := "select create_time,id,num,server_id from num_log_100ms"
 
 	kNo := 0
 	for k, v := range m {
@@ -71,15 +71,16 @@ func (op *msgOp) QueryByMap(m map[string]interface{}, options []string) ([]*Msg,
 		return result, nil
 	}
 
-	data := &Msg{}
+	data := &NumLog100ms{}
 	for iter.Scan(
-		&data.Content,
 		&data.CreateTime,
 		&data.ID,
+		&data.Num,
+		&data.ServerID,
 	) {
 		result = append(result, data)
 
-		data = &Msg{}
+		data = &NumLog100ms{}
 	}
 
 	if err := iter.Close(); err != nil {
@@ -89,11 +90,11 @@ func (op *msgOp) QueryByMap(m map[string]interface{}, options []string) ([]*Msg,
 	return result, nil
 }
 
-func (op *msgOp) QueryByMapComparison(m map[string]interface{}, options []string) ([]*Msg, error) {
-	result := []*Msg{}
+func (op *numLog100msOp) QueryByMapComparison(m map[string]interface{}, options []string) ([]*NumLog100ms, error) {
+	result := []*NumLog100ms{}
 	var params []interface{}
 
-	sql := "select content,create_time,id from msg"
+	sql := "select create_time,id,num,server_id from num_log_100ms"
 
 	kNo := 0
 	for k, v := range m {
@@ -120,15 +121,16 @@ func (op *msgOp) QueryByMapComparison(m map[string]interface{}, options []string
 		return result, nil
 	}
 
-	data := &Msg{}
+	data := &NumLog100ms{}
 	for iter.Scan(
-		&data.Content,
 		&data.CreateTime,
 		&data.ID,
+		&data.Num,
+		&data.ServerID,
 	) {
 		result = append(result, data)
 
-		data = &Msg{}
+		data = &NumLog100ms{}
 	}
 
 	if err := iter.Close(); err != nil {

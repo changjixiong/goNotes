@@ -11,19 +11,19 @@ import (
 	"path/filepath"
 	"strings"
 
-	"changit.cn/contra/cassandramodelgen/modeltool"
-	"changit.cn/contra/server/zaplogger"
+	"goNotes/dbnotes/modeltool"
+
 	"github.com/gocql/gocql"
-	"github.com/uber-go/zap"
 )
 
 var StatsDBCassandra *gocql.Session
 
-func initCassDB(host, keyspace, consistencyOption, userName, password string) *gocql.Session {
+func initCassDB(host string, port int, keyspace, consistencyOption, userName, password string) *gocql.Session {
 	cluster := gocql.NewCluster(host)
 	cluster.Keyspace = keyspace
+	cluster.Port = port
 	if len(userName) > 0 && len(password) > 0 {
-		cluster.Authenticator = gocql.PasswordAuthenticator{userName, password}
+		cluster.Authenticator = gocql.PasswordAuthenticator{Username: userName, Password: password}
 	}
 
 	ConsistencyMap := map[string]gocql.Consistency{
@@ -36,7 +36,7 @@ func initCassDB(host, keyspace, consistencyOption, userName, password string) *g
 	cluster.Consistency = ConsistencyMap[consistencyOption]
 	session, err := cluster.CreateSession()
 	if err != nil {
-		zaplogger.Fatal("cluster.CreateSession() err:", zap.Object("", err))
+		log.Fatal("cluster.CreateSession() err:", err)
 		return nil
 	}
 
@@ -65,7 +65,7 @@ func genModelFile(render *template.Template, session *gocql.Session, packageName
 	}
 
 	if len(*tableSchema) <= 0 {
-		fmt.Println("tableSchema is null")
+		fmt.Println(tableName, "tableSchema is null")
 		return
 	}
 
@@ -120,6 +120,7 @@ var fileTail = flag.String("fileTail", "_cassandra", "fileTail")
 
 var dbConnection = flag.String("dbConnection", "db.DBCassandra", "the name of db instance used in model files")
 var dbIP = flag.String("dbIP", "", "the ip of db host")
+var dbPort = flag.Int("dbPort", 9042, "the port of db host")
 
 var dbName = flag.String("dbName", "", "the name of db")
 var userName = flag.String("userName", "", "the user name of db")
@@ -141,7 +142,7 @@ func main() {
 		return
 	}
 
-	StatsDBCassandra = initCassDB(*dbIP, *dbName, "Quorum", *userName, *pwd)
+	StatsDBCassandra = initCassDB(*dbIP, *dbPort, *dbName, "Quorum", *userName, *pwd)
 
 	if nil == StatsDBCassandra {
 		fmt.Println("连接失败")

@@ -9,13 +9,13 @@ import (
 )
 
 type Notice struct {
-	ID         int        `db:"id" json:"id"`                   //
-	No         int        `db:"No" json:"No"`                   //
-	SenderID   int        `db:"sender_id" json:"sender_id"`     // 发送者
-	ReceiverID int        `db:"receiver_id" json:"receiver_id"` // 接收者
-	Content    string     `db:"content" json:"content"`         // 内容
-	Status     int8       `db:"status" json:"status"`           //
-	Createtime *time.Time `db:"createtime" json:"createtime"`   //
+	ID         int       `db:"id" json:"id"`                   //
+	No         int       `db:"No" json:"No"`                   //
+	SenderID   int       `db:"sender_id" json:"sender_id"`     // 发送者
+	ReceiverID int       `db:"receiver_id" json:"receiver_id"` // 接收者
+	Content    string    `db:"content" json:"content"`         // 内容
+	Status     int8      `db:"status" json:"status"`           //
+	Createtime time.Time `db:"createtime" json:"createtime"`   //
 }
 
 var DefaultNotice = &Notice{}

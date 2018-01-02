@@ -86,6 +86,18 @@ func (m *ModelInfo) PkColumns() []string {
 	return result
 }
 
+func IsUUID(str string) bool {
+	return "uuid" == str
+}
+
+func FirstCharLower(str string) string {
+	if len(str) > 0 {
+		return strings.ToLower(str[0:1]) + str[1:]
+	} else {
+		return ""
+	}
+}
+
 func FirstCharUpper(str string) string {
 	if len(str) > 0 {
 		return strings.ToUpper(str[0:1]) + str[1:]
@@ -133,13 +145,15 @@ func TypeConvert(str string) string {
 		return "int"
 
 	case "timestamp", "datetime":
-		return "*time.Time"
+		return "time.Time"
 
 	case "bigint":
 		return "int64"
 
 	case "float", "double", "decimal":
 		return "float64"
+	case "uuid":
+		return "gocql.UUID"
 
 	default:
 		return str

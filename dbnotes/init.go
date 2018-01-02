@@ -34,4 +34,40 @@ CREATE TABLE msg (
   PRIMARY KEY (id,No)
 );
 
+
+cassandra -----------------
+CREATE KEYSPACE space_for_back WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '3'}  AND durable_writes = true;
+
+CREATE TABLE num_log_2s (
+    server_id int,
+    create_time timestamp,
+    id uuid,
+    num int,
+    PRIMARY KEY (server_id, create_time)
+) WITH CLUSTERING ORDER BY (create_time DESC);
+
+CREATE TABLE num_log_100ms (
+    server_id int,
+    create_time timestamp,
+    id uuid,
+    num int,
+    PRIMARY KEY (server_id, create_time)
+) WITH CLUSTERING ORDER BY (create_time DESC);
+
+CREATE TABLE num_log_4s (
+    server_id int,
+    create_time timestamp,
+    id uuid,
+    num int,
+    PRIMARY KEY (server_id, create_time)
+) WITH CLUSTERING ORDER BY (create_time DESC);
+
+CREATE TABLE num_log_10ms (
+    server_id int,
+    create_time timestamp,
+    id uuid,
+    num int,
+    PRIMARY KEY (server_id, create_time)
+) WITH CLUSTERING ORDER BY (create_time DESC);
+
 */
