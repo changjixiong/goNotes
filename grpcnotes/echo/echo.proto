@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+
+
+package echo;
+
+// The greeting service definition.
+service Echo {
+  // Sends a greeting
+  rpc SayEcho (EchoRequest) returns (EchoReply) {}
+  rpc SayEchoS(stream EchoRequest) returns (stream EchoReply) {}
+}
+
+// The request message containing the user's name.
+message EchoRequest {
+  int32 num = 1;
+}
+
+// The response message containing the greetings
+message EchoReply {
+  string message = 1;
+}
