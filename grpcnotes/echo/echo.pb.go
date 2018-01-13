@@ -33,7 +33,6 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
-// The request message containing the user's name.
 type EchoRequest struct {
 	Num int32 `protobuf:"varint,1,opt,name=num" json:"num,omitempty"`
 }
@@ -50,7 +49,6 @@ func (m *EchoRequest) GetNum() int32 {
 	return 0
 }
 
-// The response message containing the greetings
 type EchoReply struct {
 	Message string `protobuf:"bytes,1,opt,name=message" json:"message,omitempty"`
 }
@@ -83,7 +81,6 @@ const _ = grpc.SupportPackageIsVersion4
 // Client API for Echo service
 
 type EchoClient interface {
-	// Sends a greeting
 	SayEcho(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoReply, error)
 	SayEchoS(ctx context.Context, opts ...grpc.CallOption) (Echo_SayEchoSClient, error)
 }
@@ -139,7 +136,6 @@ func (x *echoSayEchoSClient) Recv() (*EchoReply, error) {
 // Server API for Echo service
 
 type EchoServer interface {
-	// Sends a greeting
 	SayEcho(context.Context, *EchoRequest) (*EchoReply, error)
 	SayEchoS(Echo_SayEchoSServer) error
 }
