@@ -34,7 +34,6 @@ type Reflectinvoker struct {
 	Methods map[string]*MethodInfo
 }
 
-// var methodStruct MethodMap = MethodMap{make(map[string]*MethodInfo)}
 var errorInfo map[int]string = make(map[int]string)
 
 const (
@@ -129,24 +128,6 @@ func (r *Reflectinvoker) InvokeByJson(byteData []byte) []byte {
 	return data
 }
 
-// func RegisterMethod(v interface{}) {
-
-// 	reflectType := reflect.TypeOf(v)
-// 	host := reflect.ValueOf(v)
-
-// 	for i := 0; i < reflectType.NumMethod(); i++ {
-// 		m := reflectType.Method(i)
-
-// 		char, _ := utf8.DecodeRuneInString(m.Name)
-// 		//非导出函数不注册
-// 		if !unicode.IsUpper(char) {
-// 			continue
-// 		}
-
-// 		methodStruct.Methods[m.Name] = &MethodInfo{Method: m, Host: host, Idx: i}
-// 	}
-// }
-
 func convertParamType(v interface{}, targetType reflect.Type) (
 	targetValue reflect.Value, ok bool) {
 	defer func() {
@@ -216,22 +197,6 @@ func convertParam(methodInfo *MethodInfo, Params []interface{}) ([]reflect.Value
 	return paramsValue, nil
 }
 
-// func InvokeByReflectArgs(funcName string, par []reflect.Value) []reflect.Value {
-
-// 	return methodStruct.Methods[funcName].Host.MethodByName(funcName).Call(par)
-// }
-
-// func InvokeByInterfaceArgs(funcName string, Params []interface{}) []reflect.Value {
-
-// 	paramsValue, err := convertParam(methodStruct.Methods[funcName], Params)
-
-// 	if err != nil {
-// 		return nil
-// 	}
-
-// 	return methodStruct.Methods[funcName].Host.MethodByName(funcName).Call(paramsValue)
-// }
-
 func InvokeByValues(methodInfo *MethodInfo, params []reflect.Value) *Response {
 
 	data := &Response{}
@@ -243,39 +208,3 @@ func InvokeByValues(methodInfo *MethodInfo, params []reflect.Value) *Response {
 
 	return data
 }
-
-// func InvokeByJson(byteData []byte) []byte {
-
-// 	req := &Request{}
-// 	err := json.Unmarshal(byteData, req)
-
-// 	resultData := &Response{}
-
-// 	if err != nil {
-// 		resultData.ErrorCode = errorCode_JsonError
-// 	} else {
-// 		resultData.FuncName = req.FuncName
-
-// 		methodInfo, found := methodStruct.Methods[req.FuncName]
-
-// 		if found {
-
-// 			paramsValue, err := convertParam(methodInfo, req.Params)
-
-// 			if err != nil {
-
-// 				resultData.ErrorCode = errorCode_ParameterNotMatch
-// 			} else {
-// 				resultData = InvokeByValues(methodInfo, paramsValue)
-// 			}
-
-// 		} else {
-// 			resultData.ErrorCode = errorCode_MethodNotFound
-// 		}
-
-// 	}
-
-// 	data, _ := json.Marshal(resultData)
-
-// 	return data
-// }
