@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"net"
@@ -38,11 +39,12 @@ func (c *conn) serve() {
 		}
 
 		fmt.Println("recv:\n", string(buf[0:n]))
-		data := "HTTP/1.1 200 OK\n" +
-			"Date: Wed, 14 Dec 2016 09:50:53 GMT\n" +
-			"Content-Length: 4\n" +
-			"Content-Type: text/plain; charset=utf-8\n\n" +
-			"abcd\n\n"
+		// data := "HTTP/1.1 200 OK\n" +
+		// 	"Date: Wed, 14 Dec 2016 09:50:53 GMT\n" +
+		// 	"Content-Length: 4\n" +
+		// 	"Content-Type: text/plain; charset=utf-8\n\n" +
+		// 	"abcd\n\n"
+		data := genResponse("")
 		c.rwc.Write([]byte(data))
 		fmt.Println("send", data)
 	}
@@ -72,6 +74,7 @@ func (srv *Server) ListenAndServe() error {
 
 func (srv *Server) Serve(l net.Listener) error {
 	defer l.Close()
+	fmt.Println("Serve at :", l.Addr())
 	var tempDelay time.Duration // how long to sleep on accept failure
 	for {
 		rw, err := l.Accept()
@@ -119,14 +122,13 @@ func handleConnection(conn net.Conn) {
 		}
 
 		fmt.Println("recv:\n", string(buf[0:n]))
-		data := genResponse()
+		data := genResponse("")
 		conn.Write([]byte(data))
 		fmt.Println("send", data)
 	}
 }
 
-func genResponse() string {
-	content := "abcd"
+func genResponse(content string) string {
 
 	data := "HTTP/1.1 200 OK\r\n"
 	data += "Date: " + time.Now().String() + "\r\n"
@@ -141,7 +143,9 @@ func genResponse() string {
 
 func main() {
 
-	server := &Server{Addr: ":8080"}
+	port := 0
+	flag.IntVar(&port, "port", 8088, "port")
+	server := &Server{Addr: fmt.Sprintf(":%d", port)}
 	server.ListenAndServe()
 
 }
