@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"strings"
+	"time"
 )
 
 import ini "gopkg.in/ini.v1"
@@ -74,8 +76,27 @@ func sendToRemote(client net.Conn, message []byte) {
 		haveSend += n
 	}
 
+	fileName := ""
+
+	var file *os.File
+
+	if "1" == cfg.Section("config").Key("logout").String() {
+		now := time.Now()
+		fileName = fmt.Sprintf("%s.%d", now.Format("20060102_150405"), now.Nanosecond()/1000000)
+		file, err = os.Create(fileName)
+		defer file.Close()
+		if nil != err {
+			fmt.Println(err)
+		}
+	}
+
 	fmt.Println("sendToRemote ----------------->")
 	fmt.Println(string(message))
+
+	if nil != file {
+		file.WriteString("sendToRemote ----------------->\n")
+		file.Write(message)
+	}
 
 	//从服务器端收字符串
 	n, err := conn.Read(buf)
@@ -86,6 +107,10 @@ func sendToRemote(client net.Conn, message []byte) {
 
 	fmt.Println("<------------------ getToRemote")
 	fmt.Println(string(buf))
+	if nil != file {
+		file.WriteString("<------------------ getToRemote\n")
+		file.Write(buf[0:n])
+	}
 	fmt.Println(strings.Repeat("-", 64))
 	client.Write(buf[0:n])
 }
