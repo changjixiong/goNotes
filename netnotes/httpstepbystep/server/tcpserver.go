@@ -145,6 +145,7 @@ func main() {
 
 	port := 0
 	flag.IntVar(&port, "port", 8088, "port")
+	flag.Parse()
 	server := &Server{Addr: fmt.Sprintf(":%d", port)}
 	server.ListenAndServe()
 
