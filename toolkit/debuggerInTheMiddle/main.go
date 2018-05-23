@@ -37,7 +37,7 @@ func main() {
 }
 
 func MiddleServer(clientConn net.Conn) {
-	buf := make([]byte, 1024)
+	buf := make([]byte, 8192)
 	defer clientConn.Close()
 
 	remoteConn, err := net.Dial("tcp", cfg.Section("remote").Key("address").String())
@@ -46,7 +46,7 @@ func MiddleServer(clientConn net.Conn) {
 	}
 	defer remoteConn.Close()
 
-	clientOutChan := make(chan []byte, 64)
+	clientOutChan := make(chan []byte, 128)
 	clientBackChan := make(chan []byte, 64)
 
 	for {
@@ -71,7 +71,7 @@ func transfer(client net.Conn, remote net.Conn,
 	clientOutChan chan []byte,
 	clientBackChan chan []byte) {
 
-	ticker := time.NewTicker(time.Microsecond * 10)
+	ticker := time.NewTicker(time.Microsecond * 1)
 
 	defer func() {
 		ticker.Stop()
@@ -102,7 +102,7 @@ func transfer(client net.Conn, remote net.Conn,
 		case <-ticker.C:
 		}
 
-		buf := make([]byte, 1024)
+		buf := make([]byte, 4096)
 		//从服务器端收字符串
 		n, err := remote.Read(buf)
 		if err != nil {
