@@ -1,15 +1,17 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"time"
-)
 
-import ini "gopkg.in/ini.v1"
+	ini "gopkg.in/ini.v1"
+)
 
 var cfg *ini.File
 
@@ -34,15 +36,26 @@ func main() {
 	}
 }
 
-func MiddleServer(conn net.Conn) {
+func MiddleServer(clientConn net.Conn) {
 	buf := make([]byte, 1024)
-	defer conn.Close()
+	defer clientConn.Close()
+
+	remoteConn, err := net.Dial("tcp", cfg.Section("remote").Key("address").String())
+	if err != nil {
+		panic(err.Error())
+	}
+	defer remoteConn.Close()
+
+	clientOutChan := make(chan []byte, 64)
+	clientBackChan := make(chan []byte, 64)
 
 	for {
-		n, err := conn.Read(buf)
+		n, err := clientConn.Read(buf)
+		go transfer(clientConn, remoteConn, clientOutChan, clientBackChan)
 		switch err {
 		case nil:
-			sendToRemote(conn, buf[0:n])
+			// sendToRemote(clientConn, remoteConn, buf[0:n])
+			clientOutChan <- buf[0:n]
 		case io.EOF:
 			fmt.Printf("########Warning: End of data: %s \n", err)
 			fmt.Println("########client may by shut down")
@@ -54,20 +67,65 @@ func MiddleServer(conn net.Conn) {
 	}
 }
 
-func sendToRemote(client net.Conn, message []byte) {
-	conn, err := net.Dial("tcp", cfg.Section("remote").Key("address").String())
-	if err != nil {
-		panic(err.Error())
+func transfer(client net.Conn, remote net.Conn,
+	clientOutChan chan []byte,
+	clientBackChan chan []byte) {
+
+	ticker := time.NewTicker(time.Microsecond * 10)
+
+	defer func() {
+		ticker.Stop()
+	}()
+
+	select {
+	case msg, ok := <-clientOutChan:
+
+		if !ok {
+			return
+		}
+		msglen := len(msg)
+		haveSend := 0
+
+		for haveSend < msglen {
+			n, err := remote.Write(msg[haveSend:])
+			if err != nil {
+				println("Write Buffer Error:", err.Error())
+				return
+			}
+
+			haveSend += n
+		}
+		fmt.Println("sendToRemote ----------------->")
+		fmt.Println(string(msg))
+	case <-ticker.C:
 	}
-	defer conn.Close()
 
 	buf := make([]byte, 1024)
+	//从服务器端收字符串
+	n, err := remote.Read(buf)
+	if err != nil {
+		println("Read Buffer Error:", err.Error())
+		return
+	}
 
-	len := len(message)
+	fmt.Println("<------------------ getToRemote")
+	fmt.Println(string(buf))
+	// if nil != file {
+	// 	file.WriteString("<------------------ getToRemote\n")
+	// 	file.Write(buf[0:n])
+	// }
+	fmt.Println(strings.Repeat("-", 64))
+	client.Write(buf[0:n])
+
+}
+
+func sendToRemote(client net.Conn, remote net.Conn, message []byte) {
+
+	msglen := len(message)
 	haveSend := 0
 
-	for haveSend < len {
-		n, err := conn.Write(message[haveSend:])
+	for haveSend < msglen {
+		n, err := remote.Write(message[haveSend:])
 		if err != nil {
 			println("Write Buffer Error:", err.Error())
 			return
@@ -76,6 +134,34 @@ func sendToRemote(client net.Conn, message []byte) {
 		haveSend += n
 	}
 
+	bnr := bufio.NewReader(strings.NewReader(string(message)))
+
+	contentLen := -1
+	nextIsBody := false
+	n := 0
+	for {
+		line, err := bnr.ReadString('\n')
+		n += 1
+		fmt.Println(n)
+		if nil != err {
+			fmt.Println(err)
+			break
+		} else {
+			if strings.Contains(line, "Content-Length") {
+				contentLen = getContentLength(line)
+				fmt.Println("contentLen:", contentLen)
+			}
+
+			if !nextIsBody && line == "\r\n" {
+				nextIsBody = true
+				fmt.Println(line, "nextIsBody")
+			}
+
+		}
+	}
+
+	buf := make([]byte, 1024)
+
 	fileName := ""
 
 	var file *os.File
@@ -83,7 +169,7 @@ func sendToRemote(client net.Conn, message []byte) {
 	if "1" == cfg.Section("config").Key("logout").String() {
 		now := time.Now()
 		fileName = fmt.Sprintf("%s.%d", now.Format("20060102_150405"), now.Nanosecond()/1000000)
-		file, err = os.Create(fileName)
+		file, err := os.Create(fileName)
 		defer file.Close()
 		if nil != err {
 			fmt.Println(err)
@@ -99,7 +185,7 @@ func sendToRemote(client net.Conn, message []byte) {
 	}
 
 	//从服务器端收字符串
-	n, err := conn.Read(buf)
+	n, err := remote.Read(buf)
 	if err != nil {
 		println("Read Buffer Error:", err.Error())
 		return
@@ -114,3 +200,16 @@ func sendToRemote(client net.Conn, message []byte) {
 	fmt.Println(strings.Repeat("-", 64))
 	client.Write(buf[0:n])
 }
+
+func getContentLength(str string) int {
+	strs := strings.Split(str, " ")
+	n, err := strconv.Atoi(strs[1][0 : len(strs[1])-2])
+	if nil != err {
+		fmt.Println(str, err)
+	}
+	return n
+}
+
+/*
+
+ */
