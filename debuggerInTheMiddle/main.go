@@ -77,45 +77,48 @@ func transfer(client net.Conn, remote net.Conn,
 		ticker.Stop()
 	}()
 
-	select {
-	case msg, ok := <-clientOutChan:
+	for {
 
-		if !ok {
-			return
-		}
-		msglen := len(msg)
-		haveSend := 0
+		select {
+		case msg, ok := <-clientOutChan:
 
-		for haveSend < msglen {
-			n, err := remote.Write(msg[haveSend:])
-			if err != nil {
-				println("Write Buffer Error:", err.Error())
+			if !ok {
 				return
 			}
+			msglen := len(msg)
+			haveSend := 0
 
-			haveSend += n
+			for haveSend < msglen {
+				n, err := remote.Write(msg[haveSend:])
+				if err != nil {
+					println("Write Buffer Error:", err.Error())
+					return
+				}
+
+				haveSend += n
+			}
+			fmt.Println("sendToRemote ----------------->")
+			fmt.Println(string(msg))
+		case <-ticker.C:
 		}
-		fmt.Println("sendToRemote ----------------->")
-		fmt.Println(string(msg))
-	case <-ticker.C:
-	}
 
-	buf := make([]byte, 1024)
-	//从服务器端收字符串
-	n, err := remote.Read(buf)
-	if err != nil {
-		println("Read Buffer Error:", err.Error())
-		return
-	}
+		buf := make([]byte, 1024)
+		//从服务器端收字符串
+		n, err := remote.Read(buf)
+		if err != nil {
+			println("Read Buffer Error:", err.Error())
+			return
+		}
 
-	fmt.Println("<------------------ getToRemote")
-	fmt.Println(string(buf))
-	// if nil != file {
-	// 	file.WriteString("<------------------ getToRemote\n")
-	// 	file.Write(buf[0:n])
-	// }
-	fmt.Println(strings.Repeat("-", 64))
-	client.Write(buf[0:n])
+		fmt.Println("<------------------ getToRemote")
+		fmt.Println(string(buf))
+		// if nil != file {
+		// 	file.WriteString("<------------------ getToRemote\n")
+		// 	file.Write(buf[0:n])
+		// }
+		fmt.Println(strings.Repeat("-", 64))
+		client.Write(buf[0:n])
+	}
 
 }
 
