@@ -39,7 +39,7 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(alphaString)
+
 		_, err = file.WriteString(alphaString + "\n")
 		if nil != err {
 			fmt.Println(err)
@@ -47,5 +47,7 @@ func main() {
 		}
 
 	}
+
+	fmt.Println("make file", filepath, "total len:", linenum, "*", leninline, " = ", linenum*leninline)
 
 }
