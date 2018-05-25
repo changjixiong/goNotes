@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"goNotes/utils"
 	"os"
+	"time"
 )
 
 func main() {
@@ -26,6 +27,11 @@ func main() {
 	}
 
 	for l := 0; l < linenum; l++ {
+
+		if linenum <= 64 || (l%(linenum/64) == 0) {
+			fmt.Println(time.Now().Format("2006-01-02 15:04:05"), " gen line:", l)
+		}
+
 		header := fmt.Sprintf("%04d * %04d : ", l, leninline)
 		_, err := file.WriteString(header)
 		if nil != err {
