@@ -1,3 +1,3 @@
-# codeNotes
-## goNotes
+#codeNotes
+#goNotes
 move goNotes to codeNotes/goNotes
